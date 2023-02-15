@@ -9,11 +9,11 @@ class WidgetTree extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Auth().authStateChanges,
+      stream: Auth.instance.authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          if (Auth().isEmailVerified()) {
-            return HomePage();
+          if (Auth.instance.isEmailVerified()) {
+            return const HomePage();
           } else {
             return const LoginPage();
           }

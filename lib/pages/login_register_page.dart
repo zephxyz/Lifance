@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> signInWithEmailAndPassword() async {
     try {
-      await Auth().signInWithEmailAndPassword(
+      await Auth.instance.signInWithEmailAndPassword(
           email: _controllerEmail.text, password: _controllerPassword.text);
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -32,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> createUserWithEmailAndPassword() async {
     _controllerEmail.text = removeWhiteSpace(_controllerEmail.text);
     try {
-      await Auth().createUserWithEmailAndPassword(
+      await Auth.instance.createUserWithEmailAndPassword(
           email: _controllerEmail.text,
           password: _controllerPassword.text,
           confirmPassword: _controllerConfirmPassword.text);
@@ -57,57 +57,59 @@ class _LoginPageState extends State<LoginPage> {
         appBar: AppBar(
           title: const Text('Sign in'),
         ),
-        body: Container(
-            height: double.infinity,
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TextFormField(
-                  controller: _controllerEmail,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
+        body: Form(
+          child: Container(
+              height: double.infinity,
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  TextFormField(
+                    controller: _controllerEmail,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                    ),
+                    obscureText: false,
                   ),
-                  obscureText: false,
-                ),
-                TextFormField(
-                  controller: _controllerPassword,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
+                  TextFormField(
+                    controller: _controllerPassword,
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                    ),
+                    obscureText: true,
                   ),
-                  obscureText: true,
-                ),
-                isLogin
-                    ? Container()
-                    : TextFormField(
-                        controller: _controllerConfirmPassword,
-                        decoration: const InputDecoration(
-                          labelText: 'Confirm password',
+                  isLogin
+                      ? Container()
+                      : TextFormField(
+                          controller: _controllerConfirmPassword,
+                          decoration: const InputDecoration(
+                            labelText: 'Confirm password',
+                          ),
+                          obscureText: true,
                         ),
-                        obscureText: true,
-                      ),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  child: Text(errorMessage == '' ? '' : '$errorMessage'),
-                ),
-                ElevatedButton(
-                  onPressed: isLogin
-                      ? signInWithEmailAndPassword
-                      : createUserWithEmailAndPassword,
-                  child: Text(isLogin ? 'Login' : 'Register'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      isLogin = !isLogin;
-                    });
-                  },
-                  child: Text(isLogin ? 'Sign Up instead' : 'Sign In instead'),
-                ),
-              ],
-            )));
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    child: Text(errorMessage == '' ? '' : '$errorMessage'),
+                  ),
+                  ElevatedButton(
+                    onPressed: isLogin
+                        ? signInWithEmailAndPassword
+                        : createUserWithEmailAndPassword,
+                    child: Text(isLogin ? 'Login' : 'Register'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        isLogin = !isLogin;
+                      });
+                    },
+                    child: Text(isLogin ? 'Sign Up instead' : 'Sign In instead'),
+                  ),
+                ],
+              )),
+        ));
   }
 
   String removeWhiteSpace(String text) {
