@@ -1,8 +1,8 @@
 
 import 'package:flutter/material.dart';
-import 'package:tg_auth/pages/widget_tree.dart';
+import 'package:tg_proj/pages/widget_tree.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:tg_auth/misc/color_to_material_color.dart';
+import 'package:tg_proj/misc/color_to_material_color.dart';
 
 
 Future<void> main() async {

@@ -8,8 +8,9 @@ class Geolocation {
   Future<LocationPermission> turnOnServices() async {
     LocationPermission permission = await Geolocator.checkPermission();
 
-    if (permission != LocationPermission.always ||
-        permission != LocationPermission.whileInUse) {
+    if ((permission != LocationPermission.always ||
+            permission != LocationPermission.whileInUse) &&
+        permission != LocationPermission.deniedForever) {
       permission = await Geolocator.requestPermission();
       return permission;
     } else {
@@ -19,6 +20,5 @@ class Geolocation {
 
   get gpsPermission => turnOnServices();
 
-  get position =>
-      Geolocator.getCurrentPosition();
+  get position => Geolocator.getCurrentPosition();
 }

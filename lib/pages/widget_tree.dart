@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tg_auth/auth.dart';
-import 'package:tg_auth/pages/home_page.dart';
-import 'package:tg_auth/pages/login_register_page.dart';
-
+import 'package:tg_proj/auth.dart';
+import 'package:tg_proj/pages/getLocPage.dart';
+import 'package:tg_proj/pages/home_page.dart';
+import 'package:tg_proj/pages/login_register_page.dart';
 
 class WidgetTree extends StatelessWidget {
   const WidgetTree({super.key});
@@ -13,13 +13,10 @@ class WidgetTree extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           if (Auth.instance.isEmailVerified()) {
-            return const HomePage();
-          } else {
-            return const LoginPage();
+            return const GetPermissionPage();
           }
-        } else {
-          return const LoginPage();
         }
+        return const LoginPage();
       },
     );
   }

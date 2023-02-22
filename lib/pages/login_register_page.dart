@@ -105,7 +105,8 @@ class _LoginPageState extends State<LoginPage> {
                         isLogin = !isLogin;
                       });
                     },
-                    child: Text(isLogin ? 'Sign Up instead' : 'Sign In instead'),
+                    child:
+                        Text(isLogin ? 'Sign Up instead' : 'Sign In instead'),
                   ),
                 ],
               )),
