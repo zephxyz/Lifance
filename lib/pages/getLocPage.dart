@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tg_proj/misc/geolocation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:tg_proj/pages/home_page.dart';
+import 'package:go_router/go_router.dart';
 
 class GetPermissionPage extends StatefulWidget {
   const GetPermissionPage({super.key});
@@ -19,6 +20,7 @@ class _GetPermissionPageState extends State<GetPermissionPage> {
 
   Future<void> getPermission() async {
     gps = await Geolocation.instance.gpsPermission;
+
   }
 
   @override

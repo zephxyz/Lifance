@@ -3,6 +3,7 @@ import 'package:tg_proj/auth.dart';
 import 'package:tg_proj/pages/getLocPage.dart';
 import 'package:tg_proj/pages/home_page.dart';
 import 'package:tg_proj/pages/login_register_page.dart';
+import 'package:go_router/go_router.dart';
 
 class WidgetTree extends StatelessWidget {
   const WidgetTree({super.key});
