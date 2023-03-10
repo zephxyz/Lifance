@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../auth.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,11 +23,16 @@ class _LoginPageState extends State<LoginPage> {
     try {
       await Auth.instance.signInWithEmailAndPassword(
           email: _controllerEmail.text, password: _controllerPassword.text);
+      leave();
     } on FirebaseAuthException catch (e) {
       setState(() {
         errorMessage = e.message;
       });
     }
+  }
+
+  void leave() {
+    context.go('/getperm');
   }
 
   Future<void> createUserWithEmailAndPassword() async {
