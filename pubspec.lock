@@ -240,6 +240,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.2.0"
+  haversine_distance:
+    dependency: "direct main"
+    description:
+      name: haversine_distance
+      sha256: "5dab6654ab96482dae36271c7c63893751e9d28077fe11d65ffc4775c656ba21"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.1"
   http:
     dependency: transitive
     description:

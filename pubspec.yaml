@@ -47,6 +47,7 @@ dependencies:
   flutter_lints: ^2.0.1
   flutter_map_location_marker: ^5.2.0+2
   go_router: ^6.2.0
+  haversine_distance: ^1.2.1
 
 dev_dependencies:
   flutter_test:

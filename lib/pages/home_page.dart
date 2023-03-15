@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:tg_proj/misc/dist_calc.dart';
 import 'package:tg_proj/misc/geolocation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
@@ -85,6 +86,16 @@ class _HomePageState extends State<HomePage> {
                       subdomains: const ['a', 'b', 'c'],
                     ),
                     CurrentLocationLayer(),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                            point: DistCalculator.instance.calculate(300, 700,
+                                LatLng(pos!.latitude, pos!.longitude)),
+                            width: 40,
+                            height: 40,
+                            builder: (context) => FlutterLogo())
+                      ],
+                    )
                   ],
                 );
               }

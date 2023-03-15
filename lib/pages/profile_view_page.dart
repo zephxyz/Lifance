@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
@@ -5,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:tg_proj/misc/dist_calc.dart';
 import 'package:tg_proj/auth.dart';
 import 'package:tg_proj/misc/geolocation.dart';
+import 'package:haversine_distance/haversine_distance.dart';
 
 class ProfileViewPage extends StatefulWidget {
   const ProfileViewPage({super.key});
@@ -32,13 +35,22 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
 
   Future<void> getChalLoc() async {
     //debug
-    LatLng chalLatLng =
-        DistCalculator(300, 700, LatLng(pos!.latitude, pos!.longitude))
-            .calculate();
-    setState(() {
+    pos = await Geolocation.instance.position;
+    
+    int dist = 0;
+    do {
+      LatLng chalLatLng = DistCalculator.instance
+          .calculate(300, 701, LatLng(pos!.latitude, pos!.longitude));
+      final start = Location(pos!.latitude, pos!.longitude);
+      final end = Location(chalLatLng.latitude, chalLatLng.longitude);
+      dist =
+          HaversineDistance().haversine(start, end, Unit.METER).floor();
+      setState(() {
       testText =
-          "${pos!.latitude} ${pos!.longitude} | ${chalLatLng.latitude} ${chalLatLng.longitude}";
+          "${pos!.latitude} ${pos!.longitude} | ${chalLatLng.latitude} ${chalLatLng.longitude} ${dist}";
     });
+    } while (dist < 350);
+    
   }
 
   void page(int index) {

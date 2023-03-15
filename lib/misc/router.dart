@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:tg_proj/pages/get_location_page.dart';
+import 'package:tg_proj/pages/get_permission_page.dart';
 import 'package:tg_proj/pages/history_view_page.dart';
 import 'package:tg_proj/pages/profile_view_page.dart';
 import 'package:tg_proj/pages/home_page.dart';
