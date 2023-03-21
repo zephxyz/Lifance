@@ -21,4 +21,6 @@ class Geolocation {
   get gpsPermission => turnOnServices();
 
   get position => Geolocator.getCurrentPosition();
+
+  get perm => Geolocator.checkPermission();
 }

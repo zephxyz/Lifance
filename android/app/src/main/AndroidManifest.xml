@@ -8,7 +8,7 @@
 
 
    <application
-        android:label="tg_auth"
+        android:label="tg_proj"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -1,10 +1,19 @@
+
+
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tg_proj/main.dart';
+import 'package:tg_proj/misc/geolocation.dart';
 import 'package:tg_proj/pages/get_permission_page.dart';
 import 'package:tg_proj/pages/history_view_page.dart';
 import 'package:tg_proj/pages/profile_view_page.dart';
 import 'package:tg_proj/pages/home_page.dart';
 import 'package:tg_proj/pages/login_register_page.dart';
 import 'package:tg_proj/auth.dart';
+import 'package:geolocator/geolocator.dart';
+
+
+
 
 final router = GoRouter(
   initialLocation: '/auth',
@@ -26,8 +35,18 @@ final router = GoRouter(
       },
     ),
     GoRoute(
-        path: '/getperm',
-        builder: (context, state) => const GetPermissionPage()),
+      path: '/getperm',
+      builder: (context, state) => const GetPermissionPage(),
+      redirect: (context, state) {
+        if (locPerm == LocationPermission.always ||
+            locPerm ==
+                LocationPermission.whileInUse) {
+          return '/';
+        } else {
+          return null;
+        }
+      },
+    ),
     GoRoute(
         path: '/profileview',
         builder: (context, state) => const ProfileViewPage()),

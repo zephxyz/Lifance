@@ -13,85 +13,81 @@ class GetPermissionPage extends StatefulWidget {
 class _GetPermissionPageState extends State<GetPermissionPage> {
   LocationPermission? gps = LocationPermission.denied;
 
-  Future<void> refreshBtn() async {
-    setState(() {});
-  }
+  bool isDeniedForever = false;
 
-  Future<void> getPermission() async {
-    gps = await Geolocation.instance.gpsPermission;
-  }
-
-  Future<void> goToHome() async {
+  void goToHome() {
     context.go('/');
+  }
+
+  Future<void> openPermSettings() async {
+    Geolocator.openAppSettings();
+    LocationPermission locPerm = await Geolocator.checkPermission();
+    switch (locPerm) {
+      case LocationPermission.always:
+        goToHome();
+        break;
+      case LocationPermission.whileInUse:
+        goToHome();
+        break;
+      case LocationPermission.deniedForever:
+        isDeniedForever = true;
+        break;
+      default:
+        break;
+    }
+    
+  }
+
+  Future<void> requestPermission() async {
+    LocationPermission locPerm = await Geolocator.requestPermission();
+    switch (locPerm) {
+      case LocationPermission.always:
+        goToHome();
+        break;
+      case LocationPermission.whileInUse:
+        goToHome();
+        break;
+      case LocationPermission.deniedForever:
+        isDeniedForever = true;
+        break;
+      default:
+        break;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: getPermission(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Scaffold(
-                body: Center(
-                    child: CircularProgressIndicator(
-              color: Color(0xff725ac1),
-              backgroundColor: Colors.white,
-            )));
-          } else {
-            if (gps == LocationPermission.denied ||
-                gps == LocationPermission.unableToDetermine) {
-              return Scaffold(
-                  backgroundColor: Colors.white,
-                  appBar: AppBar(
-                    title: const Text('Home'),
-                  ),
-                  body: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("GPS PERMISSION REQUIRED TO SHOW MAP"),
-                      const Text(
-                          "This app requires permission to access GPS as the core elements cannot function without it",
-                          textAlign: TextAlign.center),
-                      const ElevatedButton(
-                          onPressed: Geolocator.openAppSettings,
-                          child: Text("Open app settings")),
-                      const SizedBox(),
-                      ElevatedButton(
-                          onPressed: refreshBtn, child: const Text("Refresh"))
-                    ],
-                  ));
-            } else if (gps == LocationPermission.deniedForever) {
-              return Scaffold(
-                  appBar: AppBar(
-                    title: const Text('Home'),
-                  ),
-                  body: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("GPS PERMISSION DENIED FOREVER"),
-                      const Text(
-                          "This app requires permission to access GPS as the core elements cannot function without it",
-                          textAlign: TextAlign.center),
-                      const ElevatedButton(
-                          onPressed: Geolocator.openAppSettings,
-                          child: Text(
-                            "Open app settings",
-                          )),
-                      const SizedBox(),
-                      ElevatedButton(
-                          onPressed: refreshBtn, child: const Text("Refresh"))
-                    ],
-                  ));
-            } else {
-              return Center(
-                // TODO: make this automatic
-                child: ElevatedButton(
-                    onPressed: goToHome, child: const Text('Continue')),
-              );
-            }
-          }
-        });
+    return isDeniedForever
+        ? Scaffold(
+            appBar: AppBar(),
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('This app requires GPS permission to run properly.',
+                    textAlign: TextAlign.center),
+                Center(
+                    child: ElevatedButton(
+                  onPressed: requestPermission,
+                  child: const Text('Grant permission'),
+                ))
+              ],
+            ),
+          )
+        : Scaffold(
+            appBar: AppBar(),
+            body: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                      'GPS permission denied forever. This app requires GPS permission to run properly.',
+                      textAlign: TextAlign.center),
+                  Center(
+                      child: ElevatedButton(
+                    onPressed: openPermSettings,
+                    child: const Text('Open app settings'),
+                  ))
+                ]));
   }
 }
