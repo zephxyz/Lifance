@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tg_proj/misc/geolocation.dart';
 import 'package:geolocator/geolocator.dart';
 
 class GetPermissionPage extends StatefulWidget {

@@ -3,14 +3,12 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tg_proj/main.dart';
-import 'package:tg_proj/misc/geolocation.dart';
 import 'package:tg_proj/pages/get_permission_page.dart';
 import 'package:tg_proj/pages/history_view_page.dart';
 import 'package:tg_proj/pages/profile_view_page.dart';
 import 'package:tg_proj/pages/home_page.dart';
 import 'package:tg_proj/pages/login_register_page.dart';
-import 'package:tg_proj/auth.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:tg_proj/misc/auth.dart';
 
 
 

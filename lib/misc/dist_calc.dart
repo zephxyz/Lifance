@@ -1,6 +1,11 @@
+import 'dart:async';
 import 'dart:math';
+import 'dart:async';
 
 import 'package:latlong2/latlong.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter/material.dart';
+import 'package:haversine_distance/haversine_distance.dart';
 
 class DistCalculator {
   static final DistCalculator instance = DistCalculator._();
@@ -9,20 +14,37 @@ class DistCalculator {
   final double _conversion = 1 / 111111;
   final Random rng = Random();
 
-  LatLng calculate(int minDist, int maxDist, LatLng usr) {
+  Marker initiateChallenge(int minDist, int maxDist, LatLng? position) {
+    return Marker(
+        point: _calculate(minDist, maxDist, position!),
+        /*anchorPos: AnchorPos.exactly(Anchor(left, top)),*/
+        builder: (context) =>
+            const Icon(Icons.room, color: Colors.red, size: 50));
+  }
+
+  bool checkDist(Location start, Location end) {
+    if (HaversineDistance().haversine(start, end, Unit.METER).floor() < 50) {
+      return true;
+    }
+    return false;
+  }
+
+  int getDist(Location start, Location end) =>
+      HaversineDistance().haversine(start, end, Unit.METER).floor();
+
+  Future<void> endChallenge() async {}
+
+  LatLng _calculate(int minDist, int maxDist, LatLng usr) {
     final double latPortion = rng.nextDouble();
     final double lngPortion = 1 - latPortion;
 
     final double distance =
         (rng.nextInt(maxDist - minDist) + minDist).toDouble();
     double dist = distance * distance;
-    print(dist);
     double lat = sqrt(dist * latPortion) * _conversion;
-    print(dist * latPortion);
-    double lng = sqrt(dist * lngPortion) * (_conversion * cos(lat));
-    print(dist * lngPortion);
+    double lng =
+        sqrt(dist * lngPortion) * (_conversion * cos(usr.latitude + lat));
 
-    //final double latLngPool = distance * _conversion;
     final LatLng chal = usr;
 
     if (rng.nextBool()) {
