@@ -48,6 +48,8 @@ dependencies:
   flutter_map_location_marker: ^5.2.0+2
   go_router: ^6.2.0
   haversine_distance: ^1.2.1
+  camera: ^0.10.3+2
+  flutter_svg: ^2.0.5
 
 dev_dependencies:
   flutter_test:
@@ -69,6 +71,8 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+  - assets/img/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

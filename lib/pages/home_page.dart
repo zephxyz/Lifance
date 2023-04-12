@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -26,14 +26,17 @@ class _HomePageState extends State<HomePage> {
 
   Timer? _timer;
 
+  int minDist = 300;
+  int maxDist = 700;
+
   Future<void> getPosition() async {
     pos = await Geolocation.instance.position;
   }
 
   Future<void> initiateChallenge() async {
     setState(() {
-      daily = DistCalculator.instance
-          .initiateChallenge(2500, 500000, LatLng(pos!.latitude, pos!.longitude));
+      daily = DistCalculator.instance.initiateChallenge(
+          minDist, maxDist, LatLng(pos!.latitude, pos!.longitude));
       distance = DistCalculator.instance.getDist(
           Location(pos!.latitude, pos!.longitude),
           Location(daily.point.latitude, daily.point.longitude));
@@ -49,7 +52,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> finishChallenge() async {
-    _timer!.cancel();
+    _timer?.cancel();
     Firestore.instance.addChallengeToHistory(
         daily.point.latitude, daily.point.longitude, distance);
     setState(() {
@@ -70,7 +73,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Home'),
+          title: const Text('Home', textAlign: TextAlign.center,),
         ),
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[

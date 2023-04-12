@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../misc/auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -68,10 +71,20 @@ class _LoginPageState extends State<LoginPage> {
               height: double.infinity,
               width: double.infinity,
               padding: const EdgeInsets.all(20),
-              child: Column(
+              child: Column(children: [
+              Container(alignment: Alignment.topCenter,
+                  padding: const EdgeInsets.all(10),
+                child: SvgPicture.asset(
+                    'assets/img/logo_koso1.svg',
+                    height: 200,
+                    width: 200,
+                  )),
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
+                  
+                  
                   TextFormField(
                     controller: _controllerEmail,
                     decoration: const InputDecoration(
@@ -115,8 +128,8 @@ class _LoginPageState extends State<LoginPage> {
                         Text(isLogin ? 'Sign Up instead' : 'Sign In instead'),
                   ),
                 ],
-              )),
-        ));
+              )]),
+        )));
   }
 
   String removeWhiteSpace(String text) {

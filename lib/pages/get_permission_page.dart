@@ -23,9 +23,11 @@ class _GetPermissionPageState extends State<GetPermissionPage> {
     LocationPermission locPerm = await Geolocator.checkPermission();
     switch (locPerm) {
       case LocationPermission.always:
+        if (isDeniedForever) isDeniedForever = !isDeniedForever;
         goToHome();
         break;
       case LocationPermission.whileInUse:
+        if (isDeniedForever) isDeniedForever = !isDeniedForever;
         goToHome();
         break;
       case LocationPermission.deniedForever:
@@ -34,16 +36,17 @@ class _GetPermissionPageState extends State<GetPermissionPage> {
       default:
         break;
     }
-    
   }
 
   Future<void> requestPermission() async {
     LocationPermission locPerm = await Geolocator.requestPermission();
     switch (locPerm) {
       case LocationPermission.always:
+        if (isDeniedForever) isDeniedForever = !isDeniedForever;
         goToHome();
         break;
       case LocationPermission.whileInUse:
+        if (isDeniedForever) isDeniedForever = !isDeniedForever;
         goToHome();
         break;
       case LocationPermission.deniedForever:

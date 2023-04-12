@@ -1,7 +1,5 @@
-import 'dart:async';
-import 'dart:math';
-import 'dart:async';
 
+import 'dart:math';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/material.dart';
@@ -14,19 +12,16 @@ class DistCalculator {
   final double _conversion = 1 / 111111;
   final Random rng = Random();
 
-  Marker initiateChallenge(int minDist, int maxDist, LatLng? position) {
-    return Marker(
-        point: _calculate(minDist, maxDist, position!),
+  Marker initiateChallenge(int minDist, int maxDist, LatLng position) {
+    return Marker( //TODO: fix marker behaving incorrectly
+        point: _calculate(minDist, maxDist, position),
         /*anchorPos: AnchorPos.exactly(Anchor(left, top)),*/
         builder: (context) =>
             const Icon(Icons.room, color: Colors.red, size: 50));
   }
 
   bool checkDist(Location start, Location end) {
-    if (HaversineDistance().haversine(start, end, Unit.METER).floor() < 50) {
-      return true;
-    }
-    return false;
+    return (HaversineDistance().haversine(start, end, Unit.METER).floor() < 50);
   }
 
   int getDist(Location start, Location end) =>
