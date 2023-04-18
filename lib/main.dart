@@ -3,15 +3,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:tg_proj/misc/color_to_material_color.dart';
 import 'package:flutter/services.dart';
 import 'package:tg_proj/misc/router.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:tg_proj/misc/geolocation.dart';
 
-LocationPermission? usrLocPerm;
-
-get locPerm => usrLocPerm;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  usrLocPerm = await Geolocator.checkPermission();
+  await Geolocation.instance.getPermission();
   runApp(const MyApp());
 }
 
