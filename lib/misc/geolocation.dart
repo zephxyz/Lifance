@@ -5,6 +5,12 @@ class Geolocation {
 
   Geolocation._();
 
+  LocationPermission? locPerm;
+
+  Future<void> getPermission() async {
+    locPerm = await Geolocator.checkPermission();
+  }
+
   Future<LocationPermission> turnOnServices() async {
     LocationPermission permission = await Geolocator.checkPermission();
 
