@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tg_proj/misc/global.dart';
+
+import '../misc/emoji_text.dart';
 
 class HistoryViewPageMap extends StatefulWidget {
   const HistoryViewPageMap({super.key});
@@ -22,7 +25,15 @@ class _HistoryViewPageMapState extends State<HistoryViewPageMap> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('History view map'),
+          title:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text("${Global.instance.streak}"),
+              const EmojiText(text: '🔥')
+            ]),
+            const Text(' '),
+            const Text('300m | 700m')
+          ]),
         ),
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[

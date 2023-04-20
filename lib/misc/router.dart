@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tg_proj/pages/get_permission_page.dart';
@@ -8,6 +9,7 @@ import 'package:tg_proj/pages/login_register_page.dart';
 import 'package:tg_proj/misc/auth.dart';
 import 'package:tg_proj/misc/geolocation.dart';
 import 'package:tg_proj/pages/photo_page.dart';
+import 'package:tg_proj/misc/global.dart';
 
 final router = GoRouter(
   initialLocation: '/auth',
@@ -32,6 +34,7 @@ final router = GoRouter(
       path: '/getperm',
       builder: (context, state) => const GetPermissionPage(),
       redirect: (context, state) {
+        
         if (Geolocation.instance.locPerm == LocationPermission.always ||
             Geolocation.instance.locPerm == LocationPermission.whileInUse) {
           return '/';

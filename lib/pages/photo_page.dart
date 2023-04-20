@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:tg_proj/misc/global.dart';
 
 class PhotoPage extends StatefulWidget {
   const PhotoPage({super.key});
@@ -58,14 +58,17 @@ class _PhotoPageState extends State<PhotoPage> {
   }
 
   Future<void> confirmPhoto() async {
-    final success =
-        await GallerySaver.saveImage(file.path, albumName: 'Lifeance');
-    if (success ?? false) { 
-    final directory = await getExternalStorageDirectory();
-    final savedImagePath = '${directory?.path}/Lifeance/${file.path.split('/').last}';
-    print('Image saved to $savedImagePath');
+    final directory = await getApplicationDocumentsDirectory();
+    final savedImagePath =
+        '${directory.path}/Lifance/${file.path.split('/').last}';
+
+    File newFile = File(savedImagePath);
+    newFile.create(exclusive: true);
+    newFile.writeAsBytesSync(file.readAsBytesSync());
+
+    Global.instance.setImagePath(newFile.path);
+    
     goToHome();
-  }
   }
 
   Future<void> discardPhoto() async {
@@ -88,9 +91,9 @@ class _PhotoPageState extends State<PhotoPage> {
               return Stack(children: [
                 ElevatedButton(
                     onPressed: goToHome, child: const Text("go to home")),
-                /*Expanded(
+                Expanded(
                   child: display ?? const Text("No camera found"),
-                ),*/
+                ),
                 photoWasTaken
                     ? Row(
                         children: [
@@ -104,7 +107,6 @@ class _PhotoPageState extends State<PhotoPage> {
                       )
                     : ElevatedButton(
                         onPressed: takePhoto, child: const Text("Take photo")),
-                        Image.file(File('/storage/Pictures/Lifeance/CAP1208535272532780813.jpg'))
               ]);
             }));
   }

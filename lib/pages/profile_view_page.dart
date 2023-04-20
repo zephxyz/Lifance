@@ -1,4 +1,4 @@
-
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +6,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:tg_proj/misc/auth.dart';
 import 'package:tg_proj/misc/geolocation.dart';
 import 'package:tg_proj/misc/firestore.dart';
+import 'package:tg_proj/misc/global.dart';
+import 'package:tg_proj/misc/emoji_text.dart';
 
 class ProfileViewPage extends StatefulWidget {
   const ProfileViewPage({super.key});
@@ -22,13 +24,11 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
     pos = await Geolocation.instance.position;
   }
 
-
   Future<void> signOut() async {
     await Auth.instance.signOut();
     goToLogin();
   }
 
-  
   Future<void> goToPhotoPage() async {
     context.go('/photopage');
   }
@@ -50,7 +50,15 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Profile View'),
+          title:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text('${Global.instance.streak}'),
+              const EmojiText(text: '🔥')
+            ]),
+            const Text(' '),
+            const Text('300m | 700m')
+          ]),
         ),
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
@@ -88,7 +96,10 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                         child: Text(testText)),
                     ElevatedButton(
                         onPressed: signOut, child: const Text('sign out')),
-                    ElevatedButton(onPressed: goToPhotoPage, child: const Text('go to photo page'))
+                    ElevatedButton(
+                        onPressed: goToPhotoPage,
+                        child: const Text('go to photo page')),
+                    Image.file(File(Global.instance.imagePath))
                   ]);
             } else {
               return const Center(

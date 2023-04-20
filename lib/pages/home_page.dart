@@ -1,3 +1,4 @@
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -10,6 +11,8 @@ import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'package:haversine_distance/haversine_distance.dart';
 import 'package:tg_proj/misc/firestore.dart';
+import 'package:tg_proj/misc/global.dart';
+import 'package:tg_proj/misc/emoji_text.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -26,8 +29,8 @@ class _HomePageState extends State<HomePage> {
 
   Timer? _timer;
 
-  int minDist = 300;
-  int maxDist = 700;
+  final int minDist = 0;
+  final int maxDist = 50;
 
   Future<void> getPosition() async {
     pos = await Geolocation.instance.position;
@@ -54,7 +57,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> finishChallenge() async {
     _timer?.cancel();
     Firestore.instance.addChallengeToHistory(
-        daily.point.latitude, daily.point.longitude, distance);
+        daily.point.latitude, daily.point.longitude, distance, 'x');
     setState(() {
       daily = Marker(point: LatLng(0, 0), builder: (context) => Container());
     });
@@ -70,10 +73,26 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    Firestore.instance.checkStreak();
+    Global.instance.getStreak();
+    
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Home', textAlign: TextAlign.center,),
+          title:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text("${Global.instance.streak}"),
+              const EmojiText(text: '🔥')
+            ]),
+            const Text(' '),
+            const Text('300m | 700m')
+          ]),
         ),
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
