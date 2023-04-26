@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tg_proj/misc/auth.dart';
 import 'package:tg_proj/misc/global.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 
 class Firestore {
   static final Firestore instance = Firestore._();
@@ -16,7 +20,6 @@ class Firestore {
         .get();
     return docSnapshot.data()?['streak'];
   }
-
 
   Future<void> checkStreak() async {
     if (user == null) {
@@ -51,8 +54,55 @@ class Firestore {
       'registered_on': Timestamp.now(),
       'total_distance': 0,
       'challenges_completed': 0,
-      'last_challenge_completed': null
+      'last_challenge_completed': null,
+      'challenge_pending': null,
     });
+  }
+
+  Future<bool> isChallengePending() async {
+    if (user == null) {
+      return false;
+    }
+    final docSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .get();
+    final challengePending = docSnapshot.data()?['challenge_pending'];
+
+    return challengePending != null;
+  }
+
+  Future<void> onChallengeStart(GeoPoint point, GeoPoint startPos) async {
+    if (user == null) {
+      return;
+    }
+    await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
+      'challenge_pending': {
+        'lat': point.latitude,
+        'lng': point.longitude,
+        'time_of_start': Timestamp.now(),
+        'lat_of_start': startPos.latitude,
+        'lng_of_start': startPos.longitude,
+      }
+    });
+  }
+
+  Future<List<Marker>> getHistoryMarkers() async {
+    final docSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .collection('challenge_history')
+        .get();
+    final List<Marker> markers = [];
+    for (var doc in docSnapshot.docs) {
+      final data = doc.data();
+      final GeoPoint latLng = data['LatLng'];
+      markers.add(Marker(
+          point: LatLng(latLng.latitude, latLng.longitude),
+          builder: (ctx) =>
+              const Icon(Icons.room, color: Colors.red, size: 10)));
+    }
+    return markers;
   }
 
   Future<int> getCountOfChallenges() async {
@@ -68,8 +118,21 @@ class Firestore {
     return challengesCompleted;
   }
 
+  Future<Map<String, dynamic>?> getChallengePending() async {
+    if (user == null) {
+      return {};
+    }
+    final docSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .get();
+    final challengePending = docSnapshot.data()?['challenge_pending'];
+
+    return challengePending;
+  }
+
   Future<void> addChallengeToHistory(
-      double lat, double lng, int distance, String path) async {
+      double lat, double lng, int distance, String? path) async {
     if (user == null) {
       return;
     }
@@ -106,6 +169,7 @@ class Firestore {
       }
     }
     await usrData.update({'last_challenge_completed': timeNow});
+    await usrData.update({'challenge_pending': null});
     await Global.instance.getStreak();
   }
 }

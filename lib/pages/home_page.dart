@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -13,6 +11,7 @@ import 'package:haversine_distance/haversine_distance.dart';
 import 'package:tg_proj/misc/firestore.dart';
 import 'package:tg_proj/misc/global.dart';
 import 'package:tg_proj/misc/emoji_text.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -36,10 +35,38 @@ class _HomePageState extends State<HomePage> {
     pos = await Geolocation.instance.position;
   }
 
+  Future<void> getChallengeIfAlreadyStarted() async {
+    final challenge = await Firestore.instance.getChallengePending();
+    if (challenge != null) {
+      setState(() {
+        daily = Marker(
+            point: LatLng(challenge['lat'], challenge['lng']),
+            builder: (context) =>
+                const Icon(Icons.room, color: Colors.red, size: 50));
+        distance = DistCalculator.instance.getDist(
+            Location(pos!.latitude, pos!.longitude),
+            Location(challenge['lat'], challenge['lng']));
+        _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
+          Position pos = await Geolocation.instance.position;
+          if (DistCalculator.instance.checkDist(
+              Location(pos.latitude, pos.longitude),
+              Location(challenge['lat'], challenge['lng']))) {
+            finishChallenge();
+          }
+        });
+      });
+    }
+  }
+
   Future<void> initiateChallenge() async {
+    if (await Firestore.instance.isChallengePending()) return;
+    Marker temp = DistCalculator.instance.initiateChallenge(
+        minDist, maxDist, LatLng(pos!.latitude, pos!.longitude));
+    await Firestore.instance.onChallengeStart(
+        GeoPoint(temp.point.latitude, temp.point.longitude),
+        GeoPoint(pos!.latitude, pos!.longitude));
     setState(() {
-      daily = DistCalculator.instance.initiateChallenge(
-          minDist, maxDist, LatLng(pos!.latitude, pos!.longitude));
+      daily = temp;
       distance = DistCalculator.instance.getDist(
           Location(pos!.latitude, pos!.longitude),
           Location(daily.point.latitude, daily.point.longitude));
@@ -56,11 +83,13 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> finishChallenge() async {
     _timer?.cancel();
-    Firestore.instance.addChallengeToHistory(
-        daily.point.latitude, daily.point.longitude, distance, 'x');
-    setState(() {
-      daily = Marker(point: LatLng(0, 0), builder: (context) => Container());
-    });
+    Global.instance.latToAdd = daily.point.latitude;
+    Global.instance.lngToAdd = daily.point.longitude;
+    Global.instance.distanceToAdd = distance;
+    /*await Firestore.instance.addChallengeToHistory(daily.point.latitude,
+        daily.point.longitude, distance, Global.instance.imagePath);*/
+
+    context.go('/photopage');
   }
 
   void page(int index) {
@@ -76,24 +105,47 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     Firestore.instance.checkStreak();
-    Global.instance.getStreak();
-    
+    getChallengeIfAlreadyStarted();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title:
-              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text("${Global.instance.streak}"),
-              const EmojiText(text: '🔥')
-            ]),
-            const Text(' '),
-            const Text('300m | 700m')
-          ]),
-        ),
+            title: Global.instance.streak == -1
+                ? FutureBuilder(
+                    future: Global.instance.getStreak(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState != ConnectionState.done) {
+                        return Container();
+                      } else {
+                        return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text("${Global.instance.streak}"),
+                                    const EmojiText(text: '🔥')
+                                  ]),
+                              const Text(' '),
+                              const Text('300m | 700m')
+                            ]);
+                      }
+                    },
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("${Global.instance.streak}"),
+                              const EmojiText(text: '🔥')
+                            ]),
+                        const Text(' '),
+                        const Text('300m | 700m')
+                      ])),
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
