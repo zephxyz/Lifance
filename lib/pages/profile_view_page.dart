@@ -1,11 +1,9 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:tg_proj/misc/auth.dart';
-import 'package:tg_proj/misc/geolocation.dart';
 import 'package:tg_proj/misc/firestore.dart';
+import 'package:tg_proj/misc/global.dart';
+import 'package:tg_proj/misc/emoji_text.dart';
 
 class ProfileViewPage extends StatefulWidget {
   const ProfileViewPage({super.key});
@@ -15,20 +13,14 @@ class ProfileViewPage extends StatefulWidget {
 }
 
 class _ProfileViewPageState extends State<ProfileViewPage> {
-  String testText = '';
-  Position? pos;
-
-  Future<void> getPosition() async {
-    pos = await Geolocation.instance.position;
-  }
-
+  
+ 
 
   Future<void> signOut() async {
     await Auth.instance.signOut();
     goToLogin();
   }
 
-  
   Future<void> goToPhotoPage() async {
     context.go('/photopage');
   }
@@ -50,8 +42,40 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Profile View'),
-        ),
+            title: Global.instance.streak == -1
+                ? FutureBuilder(
+                    future: Global.instance.getStreak(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState != ConnectionState.done) {
+                        return Container();
+                      } else {
+                        return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text("${Global.instance.streak}"),
+                                    const EmojiText(text: '🔥')
+                                  ]),
+                              const Text(' '),
+                              const Text('300m | 700m')
+                            ]);
+                      }
+                    },
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("${Global.instance.streak}"),
+                              const EmojiText(text: '🔥')
+                            ]),
+                        const Text(' '),
+                        const Text('300m | 700m')
+                      ])),
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
@@ -73,31 +97,18 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
               const Color(0xff725ac1), //,const Color(0xff8D86C9),
           onTap: page,
         ),
-        body: FutureBuilder(
-          //TEMPORARY FOR DEBUG PURPOSES
-          future: getPosition(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                        onPressed: Firestore
-                            .instance.createDocOnRegister /*getChalLoc*/,
-                        child: Text(testText)),
-                    ElevatedButton(
-                        onPressed: signOut, child: const Text('sign out')),
-                    ElevatedButton(onPressed: goToPhotoPage, child: const Text('go to photo page'))
-                  ]);
-            } else {
-              return const Center(
-                  child: CircularProgressIndicator(
-                color: Color(0xff725ac1),
-                backgroundColor: Colors.white,
-              ));
-            }
-          },
-        ));
+        body: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                  onPressed:
+                      Firestore.instance.createDocOnRegister,
+                  child: const Text('reset db')),
+              ElevatedButton(onPressed: signOut, child: const Text('sign out')),
+              ElevatedButton(
+                  onPressed: goToPhotoPage,
+                  child: const Text('go to photo page')),
+            ]));
   }
 }
