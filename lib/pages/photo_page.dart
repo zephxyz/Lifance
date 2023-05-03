@@ -1,12 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:go_router/go_router.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tg_proj/misc/global.dart';
 import 'package:tg_proj/misc/firestore.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 class PhotoPage extends StatefulWidget {
   const PhotoPage({super.key});
@@ -60,30 +62,34 @@ class _PhotoPageState extends State<PhotoPage> {
     });
   }
 
+  Future<void> addChallengeToHistory(File newFile, String savedPath) async {
+    //final Uint8List imagebytes = await compressFile(file);
+
+    //final String base64string = base64.encode(imagebytes);
+
+    await Firestore.instance.addChallengeToHistory(Global.instance.latToAdd,
+        Global.instance.lngToAdd, Global.instance.distanceToAdd, /*base64string*/null, savedPath);
+
+    Global.instance.reset();
+  }
+
   Future<void> confirmPhoto() async {
     final directory = await getApplicationDocumentsDirectory();
     final savedImagePath =
-        '${directory.path}/Lifance/${file.path.split('/').last}';
+        '${directory.path}/ChallengePhotos/${file.path.split('/').last}';
 
     File newFile = File(savedImagePath);
     newFile.create(recursive: true);
     newFile.writeAsBytesSync(file.readAsBytesSync());
-    file.deleteSync();
 
-    await Firestore.instance.addChallengeToHistory(
-        Global.instance.latToAdd,
-        Global.instance.lngToAdd,
-        Global.instance.distanceToAdd,
-        savedImagePath);
-
-    Global.instance.reset();
-
+    addChallengeToHistory(newFile, savedImagePath);
+    file.deleteSync(recursive: true);
     goToHome();
   }
 
   Future<void> skip() async {
     await Firestore.instance.addChallengeToHistory(Global.instance.latToAdd,
-        Global.instance.lngToAdd, Global.instance.distanceToAdd, null);
+        Global.instance.lngToAdd, Global.instance.distanceToAdd, null, null);
 
     goToHome();
   }
@@ -92,7 +98,7 @@ class _PhotoPageState extends State<PhotoPage> {
     setState(() {
       photoWasTaken = false;
     });
-    file.delete();
+    await file.delete();
   }
 
   @override
@@ -114,26 +120,24 @@ class _PhotoPageState extends State<PhotoPage> {
                   child: display ?? const Text("No camera found"),
                 ),
                 photoWasTaken
-                    ? Row( //TODO: position buttons on the bottom side of the screen just like the "take photo" button, fill whitespace under photo preview, position skipbutton in the center of the appbar
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                        
-                  
-                            
-                              ElevatedButton(
-                                  onPressed: confirmPhoto,
-                                  style: ElevatedButton.styleFrom(
-                                      shape: const CircleBorder(),
-                                      backgroundColor: Colors.green),
-                                  child: const Text("")),
-                              ElevatedButton(
-                                  onPressed: discardPhoto,
-                                  style: ElevatedButton.styleFrom(
-                                      shape: const CircleBorder(),
-                                      backgroundColor: Colors.red),
-                                  child: const Text(""))
-                            ],
+                    ? Row(
+                        //TODO: position buttons on the bottom side of the screen just like the "take photo" button, fill whitespace under photo preview, position skipbutton in the center of the appbar
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton(
+                              onPressed: confirmPhoto,
+                              style: ElevatedButton.styleFrom(
+                                  shape: const CircleBorder(),
+                                  backgroundColor: Colors.green),
+                              child: const Text("")),
+                          ElevatedButton(
+                              onPressed: discardPhoto,
+                              style: ElevatedButton.styleFrom(
+                                  shape: const CircleBorder(),
+                                  backgroundColor: Colors.red),
+                              child: const Text(""))
+                        ],
                       )
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,

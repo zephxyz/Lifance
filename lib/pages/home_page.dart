@@ -23,8 +23,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Position? pos;
   Marker daily = Marker(point: LatLng(0, 0), builder: (context) => Container());
-  int distance =
-      DistCalculator.instance.getDist(Location(0, 0), Location(0, 0));
+  int distance = DistCalculator.instance.getDist(Location(0, 0), Location(0, 0));
 
   Timer? _timer;
 
@@ -43,9 +42,7 @@ class _HomePageState extends State<HomePage> {
             point: LatLng(challenge['lat'], challenge['lng']),
             builder: (context) =>
                 const Icon(Icons.room, color: Colors.red, size: 50));
-        distance = DistCalculator.instance.getDist(
-            Location(pos!.latitude, pos!.longitude),
-            Location(challenge['lat'], challenge['lng']));
+        
         _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
           Position pos = await Geolocation.instance.position;
           if (DistCalculator.instance.checkDist(
@@ -81,6 +78,10 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  //distance = DistCalculator.instance.getDist(
+           // Location(pos!.latitude, pos!.longitude),
+         //   Location(challenge['lat'], challenge['lng']));
+
   Future<void> finishChallenge() async {
     _timer?.cancel();
     Global.instance.latToAdd = daily.point.latitude;
@@ -104,6 +105,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    //Firestore.instance.isFirstLogin();
     Firestore.instance.checkStreak();
     getChallengeIfAlreadyStarted();
   }

@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tg_proj/misc/auth.dart';
 import 'package:tg_proj/misc/global.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -14,26 +13,45 @@ class Firestore {
   final user = Auth.instance.currentUser;
 
   Future<int> getStreak() async {
+    user?.reload();
+    if (user == null) {
+      return 0;
+    }
     final docSnapshot = await FirebaseFirestore.instance
         .collection('users')
-        .doc(user!.uid)
+        .doc(user?.uid)
         .get();
     return docSnapshot.data()?['streak'];
   }
 
-  Future<void> checkStreak() async {
+  Future<void> isFirstLogin() async {
+    user?.reload();
     if (user == null) {
       return;
     }
     final docSnapshot = await FirebaseFirestore.instance
         .collection('users')
-        .doc(user!.uid)
+        .doc(user?.uid)
+        .get();
+    if (docSnapshot.data()?['registered_on'] == null) {
+      await createDocOnRegister();
+    }
+  }
+
+  Future<void> checkStreak() async {
+    user?.reload();
+    if (user == null) {
+      return;
+    }
+    final docSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user?.uid)
         .get();
     final temp = docSnapshot.data()?['last_challenge_completed'];
 
     final DateTime lastChallengeCompleted = temp.toDate();
     final usrData =
-        FirebaseFirestore.instance.collection('users').doc(user!.uid);
+        FirebaseFirestore.instance.collection('users').doc(user?.uid);
 
     if (lastChallengeCompleted.hour * 3600 +
             lastChallengeCompleted.minute * 60 +
@@ -45,11 +63,12 @@ class Firestore {
   }
 
   Future<void> createDocOnRegister() async {
+    user?.reload();
     if (user == null) {
       return;
     }
-    await FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
-      'email': user!.email,
+    await FirebaseFirestore.instance.collection('users').doc(user?.uid).set({
+      'email': user?.email,
       'streak': 0,
       'registered_on': Timestamp.now(),
       'total_distance': 0,
@@ -60,12 +79,13 @@ class Firestore {
   }
 
   Future<bool> isChallengePending() async {
+    user?.reload();
     if (user == null) {
       return false;
     }
     final docSnapshot = await FirebaseFirestore.instance
         .collection('users')
-        .doc(user!.uid)
+        .doc(user?.uid)
         .get();
     final challengePending = docSnapshot.data()?['challenge_pending'];
 
@@ -73,10 +93,11 @@ class Firestore {
   }
 
   Future<void> onChallengeStart(GeoPoint point, GeoPoint startPos) async {
+    user?.reload();
     if (user == null) {
       return;
     }
-    await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
+    await FirebaseFirestore.instance.collection('users').doc(user?.uid).update({
       'challenge_pending': {
         'lat': point.latitude,
         'lng': point.longitude,
@@ -88,9 +109,13 @@ class Firestore {
   }
 
   Future<List<Marker>> getHistoryMarkers() async {
+    user?.reload();
+    if (user == null) {
+      return [];
+    }
     final docSnapshot = await FirebaseFirestore.instance
         .collection('users')
-        .doc(user!.uid)
+        .doc(user?.uid)
         .collection('challenge_history')
         .get();
     final List<Marker> markers = [];
@@ -106,25 +131,27 @@ class Firestore {
   }
 
   Future<int> getCountOfChallenges() async {
+    user?.reload();
     if (user == null) {
       return -1;
     }
     final docSnapshot = await FirebaseFirestore.instance
         .collection('users')
-        .doc(user!.uid)
+        .doc(user?.uid)
         .get();
-    final challengesCompleted = docSnapshot.data()?['challenges_completed'];
+    final challengesCompleted = docSnapshot.data()?['challenges_completed'] ?? 0;
 
     return challengesCompleted;
   }
 
   Future<Map<String, dynamic>?> getChallengePending() async {
+    user?.reload();
     if (user == null) {
-      return {};
+      return null;
     }
     final docSnapshot = await FirebaseFirestore.instance
         .collection('users')
-        .doc(user!.uid)
+        .doc(user?.uid)
         .get();
     final challengePending = docSnapshot.data()?['challenge_pending'];
 
@@ -132,28 +159,30 @@ class Firestore {
   }
 
   Future<void> addChallengeToHistory(
-      double lat, double lng, int distance, String? path) async {
+      double lat, double lng, int distance, String? imgBase64, String? savedPath) async {
+     user?.reload();
     if (user == null) {
       return;
     }
 
     final int index = await getCountOfChallenges();
     final usrData =
-        FirebaseFirestore.instance.collection('users').doc(user!.uid);
+        FirebaseFirestore.instance.collection('users').doc(user?.uid);
 
     final docSnapshot = await usrData.get();
     final timeNow = DateTime.now();
-    final totalDistance = await docSnapshot.data()?['total_distance'];
+    final totalDistance = await docSnapshot.data()?['total_distance'] ?? 0;
 
     await usrData.collection('challenge_history').doc('$index').set({
       'LatLng': GeoPoint(lat, lng),
-      'photopath': path,
+      'base64image': imgBase64,
+      'image_path': savedPath,
       'completed_on': timeNow
     });
     await usrData.update({'challenges_completed': (index + 1)});
     await usrData.update({'total_distance': totalDistance + distance});
 
-    final streak = await docSnapshot.data()?['streak'];
+    final streak = await docSnapshot.data()?['streak'] ?? 0;
 
     if (streak == 0) {
       await usrData.update({'streak': 1});
