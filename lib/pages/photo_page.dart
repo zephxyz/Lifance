@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -8,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tg_proj/misc/global.dart';
 import 'package:tg_proj/misc/firestore.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:flutter/services.dart';
 
 class PhotoPage extends StatefulWidget {
   const PhotoPage({super.key});
@@ -21,8 +19,6 @@ class _PhotoPageState extends State<PhotoPage> {
   CameraController? controller;
   bool photoWasTaken = false;
   File file = File('');
-
-  Widget? display;
 
   Future<void> initializeCamera() async {
     if (!photoWasTaken) {
@@ -39,15 +35,21 @@ class _PhotoPageState extends State<PhotoPage> {
       await controller!.initialize();
       controller!.setFlashMode(FlashMode.off);
     }
-    photoWasTaken
-        ? display = Image.file(file)
-        : display = CameraPreview(controller!);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    //SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light); // wtf, this works
   }
 
   @override
   void dispose() {
     controller?.dispose();
     super.dispose();
+    //SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark); // wtf, this does not work
+
+    
   }
 
   void goToHome() {
@@ -62,18 +64,8 @@ class _PhotoPageState extends State<PhotoPage> {
     });
   }
 
-  Future<void> addChallengeToHistory(File newFile, String savedPath) async {
-    //final Uint8List imagebytes = await compressFile(file);
-
-    //final String base64string = base64.encode(imagebytes);
-
-    await Firestore.instance.addChallengeToHistory(Global.instance.latToAdd,
-        Global.instance.lngToAdd, Global.instance.distanceToAdd, /*base64string*/null, savedPath);
-
-    Global.instance.reset();
-  }
-
   Future<void> confirmPhoto() async {
+    
     final directory = await getApplicationDocumentsDirectory();
     final savedImagePath =
         '${directory.path}/ChallengePhotos/${file.path.split('/').last}';
@@ -81,9 +73,16 @@ class _PhotoPageState extends State<PhotoPage> {
     File newFile = File(savedImagePath);
     newFile.create(recursive: true);
     newFile.writeAsBytesSync(file.readAsBytesSync());
-
-    addChallengeToHistory(newFile, savedImagePath);
     file.deleteSync(recursive: true);
+    await Firestore.instance.addChallengeToHistory(
+        Global.instance.latToAdd,
+        Global.instance.lngToAdd,
+        Global.instance.distanceToAdd,
+        /*base64string*/ null,
+        savedImagePath);
+
+    Global.instance.reset();
+
     goToHome();
   }
 
@@ -104,55 +103,69 @@ class _PhotoPageState extends State<PhotoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-            title: ElevatedButton(onPressed: skip, child: const Text('Skip'))),
         body: FutureBuilder(
             future: initializeCamera(),
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
                 return const Center(child: CircularProgressIndicator());
               }
-              return Stack(children: [
-                ElevatedButton(
-                    onPressed: goToHome, child: const Text("go to home")),
-                Expanded(
-                  flex: 0,
-                  child: display ?? const Text("No camera found"),
-                ),
-                photoWasTaken
-                    ? Row(
-                        //TODO: position buttons on the bottom side of the screen just like the "take photo" button, fill whitespace under photo preview, position skipbutton in the center of the appbar
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ElevatedButton(
-                              onPressed: confirmPhoto,
-                              style: ElevatedButton.styleFrom(
-                                  shape: const CircleBorder(),
-                                  backgroundColor: Colors.green),
-                              child: const Text("")),
-                          ElevatedButton(
-                              onPressed: discardPhoto,
-                              style: ElevatedButton.styleFrom(
-                                  shape: const CircleBorder(),
-                                  backgroundColor: Colors.red),
-                              child: const Text(""))
-                        ],
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                            Center(
-                                child: ElevatedButton(
-                                    onPressed: takePhoto,
-                                    style: ElevatedButton.styleFrom(
+              return Container(
+                color: Colors.black,
+                child: Stack(fit: StackFit.loose, children: [
+                  photoWasTaken
+                      ? Align(
+                          alignment: Alignment.center, child: Image.file(file))
+                      : Align(
+                          alignment: Alignment.center,
+                          child: CameraPreview(controller!)),
+                  photoWasTaken
+                      ? Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                  onPressed: discardPhoto,
+                                  style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.all(16),
                                       shape: const CircleBorder(),
-                                      padding: const EdgeInsets.all(30.0),
-                                    ),
-                                    child: const Text(""))),
-                          ])
-              ]);
+                                      backgroundColor: Colors.red),
+                                  child: const Icon(Icons.delete)),
+                              ElevatedButton(
+                                  onPressed: confirmPhoto,
+                                  style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.all(16),
+                                      shape: const CircleBorder(),
+                                      backgroundColor: Colors.green),
+                                  child: const Icon(Icons.check)),
+                            ],
+                          ))
+                      : Align(
+                          alignment: Alignment.bottomCenter,
+                          child: ElevatedButton(
+                              onPressed: takePhoto,
+                              style: ElevatedButton.styleFrom(
+                                shape: const CircleBorder(),
+                                padding: const EdgeInsets.all(30.0),
+                              ),
+                              child: const Text(""))),
+                  Center(
+                      child: Align(
+                          alignment:
+                              Alignment.bottomCenter, // TODO: make this work
+
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              ElevatedButton(
+                                  onPressed: skip,
+                                  style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.all(28)),
+                                  child: const Text('Skip'))
+                            ],
+                          ))),
+                ]),
+              );
             }));
   }
 }

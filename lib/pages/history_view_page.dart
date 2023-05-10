@@ -6,6 +6,7 @@ import 'package:tg_proj/misc/firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:flutter/services.dart';
 
 import '../misc/emoji_text.dart';
 
@@ -36,6 +37,8 @@ class _HistoryViewPageMapState extends State<HistoryViewPageMap> {
     pos = await Geolocation.instance.position;
     await getHistory();
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
