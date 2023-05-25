@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../misc/auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -60,6 +61,8 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,68 +70,67 @@ class _LoginPageState extends State<LoginPage> {
           title: const Text('Sign in'),
         ),
         body: Form(
-          child: Container(
-              height: double.infinity,
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              child: Column(children: [
-              Container(alignment: Alignment.topCenter,
-                  padding: const EdgeInsets.all(10),
+            child: Container(
+          height: double.infinity,
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          child: Column(children: [
+            Container(
+                alignment: Alignment.topCenter,
+                padding: const EdgeInsets.all(10),
                 child: SvgPicture.asset(
-                    'assets/img/logo_koso1.svg',
-                    height: 200,
-                    width: 200,
-                  )),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  
-                  
-                  TextFormField(
-                    controller: _controllerEmail,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                    ),
-                    obscureText: false,
+                  'assets/img/logo_koso1.svg',
+                  height: 200,
+                  width: 200,
+                )),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                TextFormField(
+                  controller: _controllerEmail,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
                   ),
-                  TextFormField(
-                    controller: _controllerPassword,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                    ),
-                    obscureText: true,
+                  obscureText: false,
+                ),
+                TextFormField(
+                  controller: _controllerPassword,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
                   ),
-                  isLogin
-                      ? Container()
-                      : TextFormField(
-                          controller: _controllerConfirmPassword,
-                          decoration: const InputDecoration(
-                            labelText: 'Confirm password',
-                          ),
-                          obscureText: true,
+                  obscureText: true,
+                ),
+                isLogin
+                    ? Container()
+                    : TextFormField(
+                        controller: _controllerConfirmPassword,
+                        decoration: const InputDecoration(
+                          labelText: 'Confirm password',
                         ),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    child: Text(errorMessage == '' ? '' : '$errorMessage'),
-                  ),
-                  ElevatedButton(
-                    onPressed: isLogin
-                        ? signInWithEmailAndPassword
-                        : createUserWithEmailAndPassword,
-                    child: Text(isLogin ? 'Login' : 'Register'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        isLogin = !isLogin;
-                      });
-                    },
-                    child:
-                        Text(isLogin ? 'Sign Up instead' : 'Sign In instead'),
-                  ),
-                ],
-              )]),
+                        obscureText: true,
+                      ),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  child: Text(errorMessage == '' ? '' : '$errorMessage'),
+                ),
+                ElevatedButton(
+                  onPressed: isLogin
+                      ? signInWithEmailAndPassword
+                      : createUserWithEmailAndPassword,
+                  child: Text(isLogin ? 'Login' : 'Register'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      isLogin = !isLogin;
+                    });
+                  },
+                  child: Text(isLogin ? 'Sign Up instead' : 'Sign In instead'),
+                ),
+              ],
+            )
+          ]),
         )));
   }
 

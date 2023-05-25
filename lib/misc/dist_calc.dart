@@ -15,7 +15,7 @@ class DistCalculator {
   Marker initiateChallenge(int minDist, int maxDist, LatLng position) {
     return Marker( //TODO: fix marker behaving incorrectly
         point: _calculate(minDist, maxDist, position),
-        /*anchorPos: AnchorPos.exactly(Anchor(left, top)),*/
+        anchorPos: AnchorPos.exactly(Anchor(0, 10)),
         builder: (context) =>
             const Icon(Icons.room, color: Colors.red, size: 50));
   }
@@ -30,6 +30,8 @@ class DistCalculator {
   Future<void> endChallenge() async {}
 
   LatLng _calculate(int minDist, int maxDist, LatLng usr) {
+
+    
     final double latPortion = rng.nextDouble();
     final double lngPortion = 1 - latPortion;
 
@@ -38,7 +40,7 @@ class DistCalculator {
     double dist = distance * distance;
     double lat = sqrt(dist * latPortion) * _conversion;
     double lng =
-        sqrt(dist * lngPortion) * (_conversion * cos(usr.latitude + lat));
+        sqrt(dist * lngPortion) * _conversion / cos(usr.latitude * pi / 180);
 
     final LatLng chal = usr;
 
