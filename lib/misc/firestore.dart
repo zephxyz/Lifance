@@ -159,7 +159,7 @@ class Firestore {
   }
 
   Future<void> addChallengeToHistory(
-      double lat, double lng, int distance, String? imgBase64, String? savedPath) async {
+      double lat, double lng, int distance, String? savedPath) async {
      user?.reload();
     if (user == null) {
       return;
@@ -175,7 +175,6 @@ class Firestore {
 
     await usrData.collection('challenge_history').doc('$index').set({
       'LatLng': GeoPoint(lat, lng),
-      'base64image': imgBase64,
       'image_path': savedPath,
       'completed_on': timeNow
     });
@@ -200,5 +199,23 @@ class Firestore {
     await usrData.update({'last_challenge_completed': timeNow});
     await usrData.update({'challenge_pending': null});
     await Global.instance.getStreak();
+  }
+
+  Future<Timestamp?> userRegisteredOn() async {
+
+    user?.reload();
+    if (user == null) {
+      return null;
+    }
+
+    return await FirebaseFirestore.instance.collection('users').doc(user?.uid).get().then((value) => value.data()?['registered_on']);
+  }
+
+  Future<int?> getTotalDistance() async {
+    user?.reload();
+    if (user == null) {
+      return null;
+    }
+    return await FirebaseFirestore.instance.collection('users').doc(user?.uid).get().then((value) => value.data()?['total_distance']);
   }
 }

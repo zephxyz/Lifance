@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tg_proj/misc/auth.dart';
 import 'package:tg_proj/misc/firestore.dart';
 import 'package:tg_proj/misc/global.dart';
 import 'package:tg_proj/misc/emoji_text.dart';
+import 'package:intl/intl.dart';
 
 class ProfileViewPage extends StatefulWidget {
   const ProfileViewPage({super.key});
@@ -13,8 +15,9 @@ class ProfileViewPage extends StatefulWidget {
 }
 
 class _ProfileViewPageState extends State<ProfileViewPage> {
-  
- 
+  Timestamp? userRegisteredOn;
+  String? displayRadius;
+  int? totalDistance;
 
   Future<void> signOut() async {
     await Auth.instance.signOut();
@@ -38,6 +41,20 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
     }
   }
 
+  Future<void> onLoad() async {
+    userRegisteredOn = await Firestore.instance.userRegisteredOn();
+    totalDistance = await Firestore.instance.getTotalDistance();
+    displayRadius =
+        "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m";
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    onLoad();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,7 +76,8 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                     const EmojiText(text: '🔥')
                                   ]),
                               const Text(' '),
-                              const Text('300m | 700m')
+                              Text(
+                                  "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m"),
                             ]);
                       }
                     },
@@ -74,7 +92,8 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                               const EmojiText(text: '🔥')
                             ]),
                         const Text(' '),
-                        const Text('300m | 700m')
+                        Text(
+                            "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m"),
                       ])),
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
@@ -98,17 +117,71 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
           onTap: page,
         ),
         body: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                  onPressed:
-                      Firestore.instance.createDocOnRegister,
-                  child: const Text('reset db')),
-              ElevatedButton(onPressed: signOut, child: const Text('sign out')),
-              ElevatedButton(
-                  onPressed: goToPhotoPage,
-                  child: const Text('go to photo page')),
-            ]));
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text("profile info"), //temp
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text("${Global.instance.streak}"),
+                                    const EmojiText(text: '🔥'),
+                                  ],
+                                ),
+                                const Text("streak"),
+                              ])),
+                      Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(userRegisteredOn != null
+                                    ? DateFormat('yyyy-MM-dd')
+                                        .format(userRegisteredOn!.toDate())
+                                    : "loading"),
+                                const Text("registered on"),
+                              ])),
+                    ]),
+                Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(displayRadius ?? "loading"),
+                                const Text("radius"),
+                              ])),
+                              Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text("${totalDistance ?? "loading"}m"),
+                                const Text("total distance"),
+                              ])),
+                    ]),
+              ],
+            ),
+            ElevatedButton(onPressed: signOut, child: const Text('sign out'))
+          ],
+        ));
   }
 }

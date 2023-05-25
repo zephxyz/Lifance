@@ -64,15 +64,13 @@ class _LoginPageState extends State<LoginPage> {
 
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) { // TODO: single child scroll view místo containeru
     return Scaffold(
         appBar: AppBar(
           title: const Text('Sign in'),
         ),
         body: Form(
-            child: Container(
-          height: double.infinity,
-          width: double.infinity,
+            child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(children: [
             Container(
