@@ -114,7 +114,7 @@ class _HomePageState extends State<HomePage> {
     Firestore.instance.isFirstLogin();
     Firestore.instance.checkStreak();
     getChallengeIfAlreadyStarted();
-    if (isAlreadyStarted) {}
+   
   }
 
   @override
@@ -138,7 +138,7 @@ class _HomePageState extends State<HomePage> {
                                     const EmojiText(text: '🔥')
                                   ]),
                               const Text(' '),
-                              const Text('300m | 700m')
+                              Text("${300+Global.instance.streak}m | ${700+Global.instance.streak}m"),
                             ]);
                       }
                     },
@@ -153,7 +153,7 @@ class _HomePageState extends State<HomePage> {
                               const EmojiText(text: '🔥')
                             ]),
                         const Text(' '),
-                        const Text('300m | 700m')
+                        Text("${300+Global.instance.streak}m | ${700+Global.instance.streak}m"),
                       ])),
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[

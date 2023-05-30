@@ -40,16 +40,14 @@ class _PhotoPageState extends State<PhotoPage> {
   @override
   void initState() {
     super.initState();
-    //SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light); // wtf, this works
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
   }
 
   @override
   void dispose() {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
     controller?.dispose();
     super.dispose();
-    //SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark); // wtf, this does not work
-
-    
   }
 
   void goToHome() {
@@ -65,7 +63,6 @@ class _PhotoPageState extends State<PhotoPage> {
   }
 
   Future<void> confirmPhoto() async {
-    
     final directory = await getApplicationDocumentsDirectory();
     final savedImagePath =
         '${directory.path}/ChallengePhotos/${file.path.split('/').last}';
@@ -78,7 +75,6 @@ class _PhotoPageState extends State<PhotoPage> {
         Global.instance.latToAdd,
         Global.instance.lngToAdd,
         Global.instance.distanceToAdd,
-        /*base64string*/ null,
         savedImagePath);
 
     Global.instance.reset();
@@ -88,7 +84,7 @@ class _PhotoPageState extends State<PhotoPage> {
 
   Future<void> skip() async {
     await Firestore.instance.addChallengeToHistory(Global.instance.latToAdd,
-        Global.instance.lngToAdd, Global.instance.distanceToAdd, null, null);
+        Global.instance.lngToAdd, Global.instance.distanceToAdd, null);
 
     goToHome();
   }
@@ -142,28 +138,30 @@ class _PhotoPageState extends State<PhotoPage> {
                           ))
                       : Align(
                           alignment: Alignment.bottomCenter,
-                          child: ElevatedButton(
-                              onPressed: takePhoto,
-                              style: ElevatedButton.styleFrom(
-                                shape: const CircleBorder(),
-                                padding: const EdgeInsets.all(30.0),
-                              ),
-                              child: const Text(""))),
-                  Center(
-                      child: Align(
-                          alignment:
-                              Alignment.bottomCenter, // TODO: make this work
-
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               ElevatedButton(
-                                  onPressed: skip,
+                                  onPressed: takePhoto,
                                   style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.all(28)),
-                                  child: const Text('Skip'))
+                                    shape: const CircleBorder(),
+                                    padding: const EdgeInsets.all(30.0),
+                                  ),
+                                  child: const Text("")),
+                              Center(
+                                  child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  ElevatedButton(
+                                      onPressed: skip,
+                                      style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.all(28),
+                                          backgroundColor: Colors.black,),
+                                      child: const Text('Skip'))
+                                ],
+                              )),
                             ],
-                          ))),
+                          )),
                 ]),
               );
             }));
