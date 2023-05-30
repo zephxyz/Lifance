@@ -1,11 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../misc/auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter/services.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -27,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       await Auth.instance.signInWithEmailAndPassword(
           email: _controllerEmail.text, password: _controllerPassword.text);
-      leave();
+      goToGetPermPage();
     } on FirebaseAuthException catch (e) {
       setState(() {
         errorMessage = e.message;
@@ -35,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void leave() {
+  void goToGetPermPage() {
     context.go('/getperm');
   }
 
@@ -64,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
 
 
   @override
-  Widget build(BuildContext context) { // TODO: single child scroll view místo containeru
+  Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           title: const Text('Sign in'),
@@ -133,6 +130,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   String removeWhiteSpace(String text) {
-    return text.replaceAll(' ', '');
+    return text.trim();
   }
 }

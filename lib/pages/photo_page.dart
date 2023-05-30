@@ -40,12 +40,14 @@ class _PhotoPageState extends State<PhotoPage> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+     final mySystemTheme = SystemUiOverlayStyle.light.copyWith(systemNavigationBarColor: Colors.black);
+    SystemChrome.setSystemUIOverlayStyle(mySystemTheme);
   }
 
   @override
   void dispose() {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+    final mySystemTheme = SystemUiOverlayStyle.light.copyWith(systemNavigationBarColor: Colors.white);
+    SystemChrome.setSystemUIOverlayStyle(mySystemTheme);
     controller?.dispose();
     super.dispose();
   }
@@ -82,7 +84,7 @@ class _PhotoPageState extends State<PhotoPage> {
     goToHome();
   }
 
-  Future<void> skip() async {
+  Future<void> skipTakingPhoto() async {
     await Firestore.instance.addChallengeToHistory(Global.instance.latToAdd,
         Global.instance.lngToAdd, Global.instance.distanceToAdd, null);
 
@@ -153,7 +155,7 @@ class _PhotoPageState extends State<PhotoPage> {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   ElevatedButton(
-                                      onPressed: skip,
+                                      onPressed: skipTakingPhoto,
                                       style: ElevatedButton.styleFrom(
                                           padding: const EdgeInsets.all(28),
                                           backgroundColor: Colors.black,),

@@ -18,21 +18,20 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   Timestamp? userRegisteredOn;
   String? displayRadius;
   int? totalDistance;
+  int? challengesCompleted;
+  int? longestStreak;
+  String? userEmail;
 
   Future<void> signOut() async {
     await Auth.instance.signOut();
-    goToLogin();
+    goToLoginPage();
   }
 
-  Future<void> goToPhotoPage() async {
-    context.go('/photopage');
-  }
-
-  void goToLogin() {
+  void goToLoginPage() {
     context.go('/auth');
   }
 
-  void page(int index) {
+  void handleRedirection(int index) {
     if (index == 0) return;
     if (index == 1) {
       context.go('/');
@@ -42,10 +41,13 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   }
 
   Future<void> onLoad() async {
-    userRegisteredOn = await Firestore.instance.userRegisteredOn();
+    userRegisteredOn = await Firestore.instance.getUserRegisteredOn();
     totalDistance = await Firestore.instance.getTotalDistance();
     displayRadius =
         "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m";
+    userEmail = await Firestore.instance.getUserEmail();
+    challengesCompleted = await Firestore.instance.getChallengesCompleted();
+    longestStreak = await Firestore.instance.getLongestStreak();
     setState(() {});
   }
 
@@ -58,43 +60,7 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-            title: Global.instance.streak == -1
-                ? FutureBuilder(
-                    future: Global.instance.getStreak(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState != ConnectionState.done) {
-                        return Container();
-                      } else {
-                        return Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text("${Global.instance.streak}"),
-                                    const EmojiText(text: '🔥')
-                                  ]),
-                              const Text(' '),
-                              Text(
-                                  "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m"),
-                            ]);
-                      }
-                    },
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text("${Global.instance.streak}"),
-                              const EmojiText(text: '🔥')
-                            ]),
-                        const Text(' '),
-                        Text(
-                            "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m"),
-                      ])),
+        appBar: AppBar(),
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
@@ -114,22 +80,26 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
           unselectedItemColor: Colors.black,
           selectedItemColor:
               const Color(0xff725ac1), //,const Color(0xff8D86C9),
-          onTap: page,
+          onTap: handleRedirection,
         ),
         body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            const Text("profile info"), //temp
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(userEmail ?? "loading",
+                  style: const TextStyle(fontSize: 20)),
+            ), //temp
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(24),
                           child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -143,7 +113,7 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                 const Text("streak"),
                               ])),
                       Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(24),
                           child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -154,13 +124,27 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                     : "loading"),
                                 const Text("registered on"),
                               ])),
+                      Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text("${longestStreak ?? "loading"}"),
+                                    const EmojiText(text: '🔥'),
+                                  ],
+                                ),
+                                const Text("longest streak"),
+                              ])),
                     ]),
                 Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(24),
                           child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -168,8 +152,8 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                 Text(displayRadius ?? "loading"),
                                 const Text("radius"),
                               ])),
-                              Padding(
-                          padding: const EdgeInsets.all(16),
+                      Padding(
+                          padding: const EdgeInsets.all(24),
                           child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -177,10 +161,20 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                 Text("${totalDistance ?? "loading"}m"),
                                 const Text("total distance"),
                               ])),
+                      Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text("${challengesCompleted ?? "loading"}"),
+                                const Text("challenges completed"),
+                              ])),
                     ]),
               ],
             ),
-            ElevatedButton(onPressed: signOut, child: const Text('sign out'))
+
+            ElevatedButton(onPressed: signOut, child: const Text('Sign out'))
           ],
         ));
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:tg_proj/misc/dist_calc.dart';
@@ -12,7 +13,6 @@ import 'package:tg_proj/misc/firestore.dart';
 import 'package:tg_proj/misc/global.dart';
 import 'package:tg_proj/misc/emoji_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/services.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -62,6 +62,8 @@ class _HomePageState extends State<HomePage> {
           }
         });
       });
+    } else {
+      setState(() {});
     }
   }
 
@@ -94,12 +96,14 @@ class _HomePageState extends State<HomePage> {
     _timer?.cancel();
     Global.instance.latToAdd = daily.point.latitude;
     Global.instance.lngToAdd = daily.point.longitude;
-    Global.instance.distanceToAdd = distance;
+    Global.instance.distanceToAdd = DistCalculator.instance.getDist(
+        Location(pos!.latitude, pos!.longitude),
+        Location(daily.point.latitude, daily.point.longitude));
 
     context.go('/photopage');
   }
 
-  void page(int index) {
+  void handleRedirection(int index) {
     if (index == 1) return;
     if (index == 0) {
       context.go('/profileview');
@@ -111,16 +115,18 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    Firestore.instance.isFirstLogin();
+    Firestore.instance.onFirstLogin();
     Firestore.instance.checkStreak();
     getChallengeIfAlreadyStarted();
-   
+    final mySystemTheme = SystemUiOverlayStyle.light
+        .copyWith(systemNavigationBarColor: Colors.white);
+    SystemChrome.setSystemUIOverlayStyle(mySystemTheme);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar( 
+        appBar: AppBar(
             title: Global.instance.streak == -1
                 ? FutureBuilder(
                     future: Global.instance.getStreak(),
@@ -138,7 +144,8 @@ class _HomePageState extends State<HomePage> {
                                     const EmojiText(text: '🔥')
                                   ]),
                               const Text(' '),
-                              Text("${300+Global.instance.streak}m | ${700+Global.instance.streak}m"),
+                              Text(
+                                  "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m"),
                             ]);
                       }
                     },
@@ -153,7 +160,8 @@ class _HomePageState extends State<HomePage> {
                               const EmojiText(text: '🔥')
                             ]),
                         const Text(' '),
-                        Text("${300+Global.instance.streak}m | ${700+Global.instance.streak}m"),
+                        Text(
+                            "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m"),
                       ])),
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
@@ -174,7 +182,7 @@ class _HomePageState extends State<HomePage> {
           unselectedItemColor: Colors.black,
           selectedItemColor:
               const Color(0xff725ac1), //,const Color(0xff8D86C9),
-          onTap: page,
+          onTap: handleRedirection,
         ),
         body: Stack(children: [
           FutureBuilder(

@@ -27,7 +27,6 @@ class DistCalculator {
   int getDist(Location start, Location end) =>
       HaversineDistance().haversine(start, end, Unit.METER).floor();
 
-  Future<void> endChallenge() async {}
 
   LatLng _calculate(int minDist, int maxDist, LatLng usr) {
 

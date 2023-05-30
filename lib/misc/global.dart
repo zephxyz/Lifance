@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+
 import 'package:tg_proj/misc/firestore.dart';
-import 'package:tg_proj/misc/emoji_text.dart';
+
 
 class Global {
   static final Global instance = Global._();
