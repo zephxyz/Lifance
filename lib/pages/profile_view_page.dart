@@ -95,7 +95,7 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Padding(

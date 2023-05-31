@@ -59,7 +59,7 @@ class _GetPermissionPageState extends State<GetPermissionPage> {
 
   @override
   Widget build(BuildContext context) {
-    return isDeniedForever
+    return !isDeniedForever
         ? Scaffold(
             appBar: AppBar(),
             body: Column(

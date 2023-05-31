@@ -4,6 +4,7 @@ import 'package:tg_proj/misc/global.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:tg_proj/misc/photo_info.dart';
 
 class Firestore {
   static final Firestore instance = Firestore._();
@@ -169,7 +170,7 @@ class Firestore {
       'image_path': savedPath,
       'completed_on': timeNow
     });
-    await usrData.update({'challenges_completed': (index ?? 0 + 1)});
+    await usrData.update({'challenges_completed': ((index ?? 0) + 1)});
     await usrData.update({'total_distance': totalDistance + distance});
 
     final streak = await docSnapshot.data()?['streak'] ?? 0;
@@ -247,7 +248,7 @@ class Firestore {
         .then((value) => value.data()?['longest_streak'] ?? 0);
   }
 
-  Future<List<String?>> getHistoryPhotos() async {
+  Future<List<PhotoInfo>> getHistoryPhotos() async {
     if (user == null) {
       return [];
     }
@@ -256,11 +257,12 @@ class Firestore {
         .doc(user?.uid)
         .collection('challenge_history')
         .get();
-    final List<String?> photos = [];
+    final List<PhotoInfo> photos = [];
     for (var doc in docSnapshot.docs) {
       final data = doc.data();
       final String? photoPath = data['image_path'];
-      photos.add(photoPath);
+      final Timestamp? time = data['completed_on'];
+      photos.add(PhotoInfo(photoPath, time));
     }
     return photos;
   }

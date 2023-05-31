@@ -33,6 +33,7 @@ class _PhotoPageState extends State<PhotoPage> {
       );
 
       await controller!.initialize();
+    
       controller!.setFlashMode(FlashMode.off);
     }
   }
@@ -40,7 +41,7 @@ class _PhotoPageState extends State<PhotoPage> {
   @override
   void initState() {
     super.initState();
-     final mySystemTheme = SystemUiOverlayStyle.light.copyWith(systemNavigationBarColor: Colors.black);
+    final mySystemTheme = SystemUiOverlayStyle.light.copyWith(systemNavigationBarColor: Colors.black);
     SystemChrome.setSystemUIOverlayStyle(mySystemTheme);
   }
 

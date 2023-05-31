@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:tg_proj/misc/global.dart';
 import 'package:tg_proj/misc/geolocation.dart';
 import 'package:tg_proj/misc/firestore.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../misc/emoji_text.dart';
+import '../misc/photo_info.dart';
 
 class HistoryViewPageMap extends StatefulWidget {
   const HistoryViewPageMap({super.key});
@@ -100,8 +102,8 @@ class _HistoryViewPageMapState extends State<HistoryViewPageMap> {
               const Color(0xff725ac1), //,const Color(0xff8D86C9),
           onTap: handleRedirection,
         ),
-        body: Stack(
-          children:[ FutureBuilder(
+        body: Stack(children: [
+          FutureBuilder(
               future: getPosition(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState != ConnectionState.done) {
@@ -109,8 +111,10 @@ class _HistoryViewPageMapState extends State<HistoryViewPageMap> {
                 } else {
                   return FlutterMap(
                     options: MapOptions(
-                        center: LatLng(pos?.latitude ?? 0,
-                            pos?.longitude ?? 0), //pos!.latitude, pos!.longitude
+                        center: LatLng(
+                            pos?.latitude ?? 0,
+                            pos?.longitude ??
+                                0), //pos!.latitude, pos!.longitude
                         zoom: 15.0,
                         minZoom: 2,
                         maxZoom: 18.3,
@@ -131,19 +135,19 @@ class _HistoryViewPageMapState extends State<HistoryViewPageMap> {
                     ],
                   );
                 }
-              }), 
-              Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.go('/historyviewphotos');
-                    },
-                    child: const Text('Photos'),
-                  ),
-                ),
-              )
+              }),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  context.go('/historyviewphotos');
+                },
+                child: const Text('Photos'),
+              ),
+            ),
+          )
         ]));
   }
 }
@@ -156,7 +160,7 @@ class HistoryViewPagePhotos extends StatefulWidget {
 }
 
 class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
-  List<String?> photos = [];
+  List<PhotoInfo> photos = [];
 
   void handleRedirection(int index) {
     if (index == 2) return;
@@ -172,8 +176,22 @@ class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
     setState(() {});
   }
 
+  List<Widget> getChildren() {
+    List<Widget> children = [];
+
+    for (var photo in photos) {
+      if (photo.getPath != null) {
+        children.add(Image.file(File(photo.getPath)));
+        children
+            .add(Text(DateFormat('yyyy-MM-dd').format(photo.getDate.toDate())));
+      }
+    }
+
+    return children;
+  }
+
   @override
-  void initState(){
+  void initState() {
     super.initState();
     getPhotos();
   }
@@ -240,13 +258,7 @@ class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
           onTap: handleRedirection,
         ),
         body: ListView(
-      children: [
-        for (var photo in photos)
-        if(photo != null)
-          Image.file(
-            File(photo),
-          )
-      ],
-    ));
+          children: [for (var widget in getChildren()) widget],
+        ));
   }
 }
