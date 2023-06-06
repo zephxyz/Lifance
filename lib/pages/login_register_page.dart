@@ -21,6 +21,8 @@ class _LoginPageState extends State<LoginPage> {
       TextEditingController();
 
   Future<void> signInWithEmailAndPassword() async {
+    _controllerEmail.text = _controllerEmail.text.trim();
+    _controllerPassword.text = _controllerPassword.text.trim();
     try {
       await Auth.instance.signInWithEmailAndPassword(
           email: _controllerEmail.text, password: _controllerPassword.text);
@@ -37,7 +39,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> createUserWithEmailAndPassword() async {
-    _controllerEmail.text = removeWhiteSpace(_controllerEmail.text);
+    _controllerEmail.text = _controllerEmail.text.trim();
+    _controllerPassword.text = _controllerPassword.text.trim();
+    _controllerConfirmPassword.text = _controllerConfirmPassword.text.trim();
     try {
       await Auth.instance.createUserWithEmailAndPassword(
           email: _controllerEmail.text,
@@ -57,8 +61,6 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -127,9 +129,5 @@ class _LoginPageState extends State<LoginPage> {
             )
           ]),
         )));
-  }
-
-  String removeWhiteSpace(String text) {
-    return text.trim();
   }
 }

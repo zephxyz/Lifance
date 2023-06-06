@@ -16,7 +16,8 @@ class ProfileViewPage extends StatefulWidget {
 
 class _ProfileViewPageState extends State<ProfileViewPage> {
   Timestamp? userRegisteredOn;
-  String? displayRadius;
+  String? displayRadius =
+      "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m";
   int? totalDistance;
   int? challengesCompleted;
   int? longestStreak;
@@ -43,8 +44,6 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   Future<void> onLoad() async {
     userRegisteredOn = await Firestore.instance.getUserRegisteredOn();
     totalDistance = await Firestore.instance.getTotalDistance();
-    displayRadius =
-        "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m";
     userEmail = await Firestore.instance.getUserEmail();
     challengesCompleted = await Firestore.instance.getChallengesCompleted();
     longestStreak = await Firestore.instance.getLongestStreak();
@@ -81,6 +80,7 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
           selectedItemColor:
               const Color(0xff725ac1), //,const Color(0xff8D86C9),
           onTap: handleRedirection,
+          backgroundColor: Colors.white,
         ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -88,14 +88,16 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(userEmail ?? "loading",
-                  style: const TextStyle(fontSize: 20)),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.w700)),
+            
             ), //temp
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Padding(
@@ -110,7 +112,21 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                     const EmojiText(text: '🔥'),
                                   ],
                                 ),
-                                const Text("streak"),
+                                const SizedBox(
+                                  height: 3,
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                      border: Border(
+                                          top: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                              width: 2.5))),
+                                  child: const SizedBox(width: 75),
+                                ),
+                                const Text("streak",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600)),
                               ])),
                       Padding(
                           padding: const EdgeInsets.all(24),
@@ -122,7 +138,21 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                     ? DateFormat('yyyy-MM-dd')
                                         .format(userRegisteredOn!.toDate())
                                     : "loading"),
-                                const Text("registered on"),
+                                const SizedBox(
+                                  height: 3,
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                      border: Border(
+                                          top: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                              width: 2.5))),
+                                  child: const SizedBox(width: 75),
+                                ),
+                                const Text("registered on",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600)),
                               ])),
                       Padding(
                           padding: const EdgeInsets.all(24),
@@ -136,7 +166,21 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                     const EmojiText(text: '🔥'),
                                   ],
                                 ),
-                                const Text("longest streak"),
+                                const SizedBox(
+                                  height: 3,
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                      border: Border(
+                                          top: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                              width: 2.5))),
+                                  child: const SizedBox(width: 75),
+                                ),
+                                const Text("longest streak",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600)),
                               ])),
                     ]),
                 Column(
@@ -150,7 +194,21 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(displayRadius ?? "loading"),
-                                const Text("radius"),
+                                const SizedBox(
+                                  height: 3,
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                      border: Border(
+                                          top: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                              width: 2.5))),
+                                  child: const SizedBox(width: 75),
+                                ),
+                                const Text("radius",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600)),
                               ])),
                       Padding(
                           padding: const EdgeInsets.all(24),
@@ -158,8 +216,22 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text("${totalDistance ?? "loading"}m"),
-                                const Text("total distance"),
+                                Text(totalDistance == null ? "loading" : "${totalDistance}m"),
+                                const SizedBox(
+                                  height: 3,
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                      border: Border(
+                                          top: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                              width: 2.5))),
+                                  child: const SizedBox(width: 75),
+                                ),
+                                const Text("total distance",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600)),
                               ])),
                       Padding(
                           padding: const EdgeInsets.all(24),
@@ -168,7 +240,22 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text("${challengesCompleted ?? "loading"}"),
-                                const Text("challenges completed"),
+                                const SizedBox(
+                                  height: 3,
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                      border: Border(
+                                          top: BorderSide(
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                              width: 2.5))),
+                                  child: const SizedBox(width: 75),
+                                ),
+                                const Text(
+                                  "challenges\ncompleted",
+                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                ),
                               ])),
                     ]),
               ],

@@ -26,6 +26,7 @@ class _HomePageState extends State<HomePage> {
   Marker daily = Marker(point: LatLng(0, 0), builder: (context) => Container());
   int distance =
       DistCalculator.instance.getDist(Location(0, 0), Location(0, 0));
+  String displayDistance = '';
   bool isAlreadyStarted = false;
   double chalLat = 0;
   double chalLng = 0;
@@ -45,22 +46,29 @@ class _HomePageState extends State<HomePage> {
   Future<void> getChallengeIfAlreadyStarted() async {
     final challenge = await Firestore.instance.getChallengePending();
     if (challenge != null) {
+      pos = await Geolocation.instance.position;
       setState(() {
         chalLat = challenge['lat'];
         chalLng = challenge['lng'];
         daily = Marker(
-            point: LatLng(challenge['lat'], challenge['lng']),
+            point: LatLng(chalLat, chalLng),
             builder: (context) =>
-                const Icon(Icons.room, color: Colors.red, size: 50));
+                const Icon(Icons.room, color: Colors.red, size: 25));
         isAlreadyStarted = true;
+        
+
         _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
           Position pos = await Geolocation.instance.position;
-          if (DistCalculator.instance.checkDist(
+          int temp = DistCalculator.instance.getDist(
               Location(pos.latitude, pos.longitude),
-              Location(challenge['lat'], challenge['lng']))) {
-            finishChallenge();
+              Location(challenge['lat'], challenge['lng']));
+          if (temp <= 50) {
+            await finishChallenge();
           }
-        });
+          displayDistance = "${temp.toString()}m";
+        }
+        );
+        
       });
     } else {
       setState(() {});
@@ -75,17 +83,21 @@ class _HomePageState extends State<HomePage> {
         GeoPoint(temp.point.latitude, temp.point.longitude),
         GeoPoint(pos!.latitude, pos!.longitude));
     setState(() {
+      isAlreadyStarted = true;
       daily = temp;
       distance = DistCalculator.instance.getDist(
           Location(pos!.latitude, pos!.longitude),
           Location(daily.point.latitude, daily.point.longitude));
-      _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
+      displayDistance = "${distance.toString()}m";
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) async {
         Position pos = await Geolocation.instance.position;
-        if (DistCalculator.instance.checkDist(
+        int temp = DistCalculator.instance.getDist(
             Location(pos.latitude, pos.longitude),
-            Location(daily.point.latitude, daily.point.longitude))) {
-          finishChallenge();
+            Location(daily.point.latitude, daily.point.longitude));
+        if (temp <= 50) {
+          await finishChallenge();
         }
+        displayDistance = "${temp.toString()}m";
       });
     });
   }
@@ -118,6 +130,7 @@ class _HomePageState extends State<HomePage> {
     Firestore.instance.onFirstLogin();
     Firestore.instance.checkStreak();
     getChallengeIfAlreadyStarted();
+
     final mySystemTheme = SystemUiOverlayStyle.light
         .copyWith(systemNavigationBarColor: Colors.white);
     SystemChrome.setSystemUIOverlayStyle(mySystemTheme);
@@ -183,6 +196,7 @@ class _HomePageState extends State<HomePage> {
           selectedItemColor:
               const Color(0xff725ac1), //,const Color(0xff8D86C9),
           onTap: handleRedirection,
+          backgroundColor: Colors.white,
         ),
         body: Stack(children: [
           FutureBuilder(
@@ -197,18 +211,17 @@ class _HomePageState extends State<HomePage> {
                 } else {
                   return FlutterMap(
                     options: MapOptions(
-                        center: LatLng(
-                            pos?.latitude ?? 0,
-                            pos?.longitude ??
-                                0), //pos!.latitude, pos!.longitude
-                        zoom: 15.0,
-                        minZoom: 2,
-                        maxZoom: 18.3,
-                        keepAlive: true,
-                        interactiveFlags:
-                            InteractiveFlag.all & ~InteractiveFlag.rotate,
-                        maxBounds: LatLngBounds(
-                            LatLng(-90, -180.0), LatLng(90.0, 180.0))),
+                      center: LatLng(pos?.latitude ?? 0,
+                          pos?.longitude ?? 0), //pos!.latitude, pos!.longitude
+                      zoom: 15.0,
+                      minZoom: 2,
+                      maxZoom: 18.3,
+                      keepAlive: true,
+                      interactiveFlags:
+                          InteractiveFlag.all & ~InteractiveFlag.rotate,
+                      maxBounds: LatLngBounds(
+                          LatLng(-90, -180.0), LatLng(90.0, 180.0)),
+                    ),
                     children: [
                       TileLayer(
                         urlTemplate:
@@ -231,7 +244,9 @@ class _HomePageState extends State<HomePage> {
                   shape: const CircleBorder(),
                   padding: const EdgeInsets.all(12.0),
                 ),
-                child: const Text('start'),
+                child: isAlreadyStarted
+                    ? Text(displayDistance)
+                    : const Text('start'),
               ))
         ]));
   }

@@ -1,4 +1,3 @@
-
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tg_proj/pages/get_permission_page.dart';
@@ -10,17 +9,18 @@ import 'package:tg_proj/misc/auth.dart';
 import 'package:tg_proj/misc/geolocation.dart';
 import 'package:tg_proj/pages/photo_page.dart';
 
-
 final router = GoRouter(
   initialLocation: '/auth',
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const HomePage(),
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: HomePage()),
     ),
     GoRoute(
       path: '/auth',
-      builder: (context, state) => const LoginPage(),
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: LoginPage()),
       redirect: (context, state) {
         if (Auth.instance.currentUser != null &&
             Auth.instance.isEmailVerified()) {
@@ -32,9 +32,9 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/getperm',
-      builder: (context, state) => const GetPermissionPage(),
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: GetPermissionPage()),
       redirect: (context, state) {
-        
         if (Geolocation.instance.locPerm == LocationPermission.always ||
             Geolocation.instance.locPerm == LocationPermission.whileInUse) {
           return '/';
@@ -44,14 +44,24 @@ final router = GoRouter(
       },
     ),
     GoRoute(
-        path: '/profileview',
-        builder: (context, state) => const ProfileViewPage()),
+      path: '/profileview',
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: ProfileViewPage()),
+    ),
     GoRoute(
-        path: '/historyviewmap',
-        builder: (context, state) => const HistoryViewPageMap()),
+      path: '/historyviewmap',
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: HistoryViewPageMap()),
+    ),
     GoRoute(
-        path: '/historyviewphotos',
-        builder: (context, state) => const HistoryViewPagePhotos()),
-    GoRoute(path: '/photopage', builder: (context, state) => const PhotoPage())
+      path: '/historyviewphotos',
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: HistoryViewPagePhotos()),
+    ),
+    GoRoute(
+      path: '/photopage',
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: PhotoPage()),
+    )
   ],
 );

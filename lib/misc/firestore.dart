@@ -256,14 +256,23 @@ class Firestore {
         .collection('users')
         .doc(user?.uid)
         .collection('challenge_history')
+        .orderBy('completed_on', descending: true)
         .get();
     final List<PhotoInfo> photos = [];
+
     for (var doc in docSnapshot.docs) {
       final data = doc.data();
       final String? photoPath = data['image_path'];
+      if(photoPath == null) {
+        continue;
+      }
       final Timestamp? time = data['completed_on'];
+      if(time == null) {
+        continue;
+      }
       photos.add(PhotoInfo(photoPath, time));
     }
+
     return photos;
   }
 }

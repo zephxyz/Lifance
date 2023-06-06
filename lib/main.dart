@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: buildMaterialColor(const Color(0xff725ac1)),
         primaryColor: buildMaterialColor(const Color(0xff725ac1)),
+    
       ),
     );
   }

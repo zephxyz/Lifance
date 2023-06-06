@@ -13,11 +13,10 @@ class DistCalculator {
   final Random rng = Random();
 
   Marker initiateChallenge(int minDist, int maxDist, LatLng position) {
-    return Marker( //TODO: fix marker behaving incorrectly
+    return Marker( 
         point: _calculate(minDist, maxDist, position),
-        anchorPos: AnchorPos.exactly(Anchor(0, 10)),
         builder: (context) =>
-            const Icon(Icons.room, color: Colors.red, size: 50));
+            const Icon(Icons.room, color: Colors.red, size: 25));
   }
 
   bool checkDist(Location start, Location end) {
