@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -22,6 +24,7 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   int? challengesCompleted;
   int? longestStreak;
   String? userEmail;
+  StreamSubscription<int>? challengeStateStream;
 
   Future<void> signOut() async {
     await Auth.instance.signOut();
@@ -54,6 +57,11 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   void initState() {
     super.initState();
     onLoad();
+    challengeStateStream = Global.instance.challengeStateStream.listen((event) {
+      if(event == 1) {
+        context.go('/photopage');
+      }
+    });
   }
 
   @override

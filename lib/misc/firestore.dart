@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:tg_proj/misc/auth.dart';
 import 'package:tg_proj/misc/global.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -102,7 +103,7 @@ class Firestore {
     return challengePending != null;
   }
 
-  Future<void> onChallengeStart(GeoPoint point, GeoPoint startPos) async {
+  Future<void> onChallengeStart(GeoPoint point, GeoPoint startPos, int totalDistance) async {
     if (user == null) {
       return;
     }
@@ -113,6 +114,7 @@ class Firestore {
         'time_of_start': Timestamp.now(),
         'lat_of_start': startPos.latitude,
         'lng_of_start': startPos.longitude,
+        'total_distance': totalDistance,
       }
     });
   }
@@ -168,7 +170,8 @@ class Firestore {
     await usrData.collection('challenge_history').doc('$index').set({
       'LatLng': GeoPoint(lat, lng),
       'image_path': savedPath,
-      'completed_on': timeNow
+      'completed_on': timeNow,
+      'total_distance': distance,
     });
     await usrData.update({'challenges_completed': ((index ?? 0) + 1)});
     await usrData.update({'total_distance': totalDistance + distance});
@@ -199,7 +202,7 @@ class Firestore {
     if (tempStreak > tempLongestStreak) {
       await usrData.update({'longest_streak': tempStreak});
     }
-    await Global.instance.getStreak();
+    await Global.instance.fetchStreak();
   }
 
   Future<Timestamp?> getUserRegisteredOn() async {
@@ -263,11 +266,11 @@ class Firestore {
     for (var doc in docSnapshot.docs) {
       final data = doc.data();
       final String? photoPath = data['image_path'];
-      if(photoPath == null) {
+      if (photoPath == null) {
         continue;
       }
       final Timestamp? time = data['completed_on'];
-      if(time == null) {
+      if (time == null) {
         continue;
       }
       photos.add(PhotoInfo(photoPath, time));

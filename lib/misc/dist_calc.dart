@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/material.dart';
 import 'package:haversine_distance/haversine_distance.dart';
+import 'package:tg_proj/misc/challenge.dart';
 
 class DistCalculator {
   static final DistCalculator instance = DistCalculator._();
@@ -12,11 +13,8 @@ class DistCalculator {
   final double _conversion = 1 / 111111;
   final Random rng = Random();
 
-  Marker initiateChallenge(int minDist, int maxDist, LatLng position) {
-    return Marker( 
-        point: _calculate(minDist, maxDist, position),
-        builder: (context) =>
-            const Icon(Icons.room, color: Colors.red, size: 25));
+  Challenge initiateChallenge(int minDist, int maxDist, LatLng position) {
+    return _calculate(minDist, maxDist, position);
   }
 
   bool checkDist(Location start, Location end) {
@@ -27,7 +25,7 @@ class DistCalculator {
       HaversineDistance().haversine(start, end, Unit.METER).floor();
 
 
-  LatLng _calculate(int minDist, int maxDist, LatLng usr) {
+  Challenge _calculate(int minDist, int maxDist, LatLng usr) {
 
     
     final double latPortion = rng.nextDouble();
@@ -53,6 +51,6 @@ class DistCalculator {
       chal.longitude -= lng;
     }
 
-    return chal;
+    return Challenge(chal.latitude, chal.longitude, distance.floor(), distance.floor());
   }
 }

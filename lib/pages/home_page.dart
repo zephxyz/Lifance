@@ -23,113 +23,71 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   Position? pos;
-  Marker daily = Marker(point: LatLng(0, 0), builder: (context) => Container());
-  int distance =
-      DistCalculator.instance.getDist(Location(0, 0), Location(0, 0));
-  String displayDistance = '';
-  bool isAlreadyStarted = false;
-  double chalLat = 0;
-  double chalLng = 0;
-
-  Timer? _timer;
+  Marker challengeMarker = Global.instance.challengeMarker;
+  StreamSubscription<int>? challengeStateStream;
 
   final int minDist = 0;
   final int maxDist = 50;
 
   Future<void> getPosition() async {
     pos = await Geolocation.instance.position;
-
-    distance = DistCalculator.instance.getDist(
-        Location(pos!.latitude, pos!.longitude), Location(chalLat, chalLng));
-  }
-
-  Future<void> getChallengeIfAlreadyStarted() async {
-    final challenge = await Firestore.instance.getChallengePending();
-    if (challenge != null) {
-      pos = await Geolocation.instance.position;
-      setState(() {
-        chalLat = challenge['lat'];
-        chalLng = challenge['lng'];
-        daily = Marker(
-            point: LatLng(chalLat, chalLng),
-            builder: (context) =>
-                const Icon(Icons.room, color: Colors.red, size: 25));
-        isAlreadyStarted = true;
-        
-
-        _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
-          Position pos = await Geolocation.instance.position;
-          int temp = DistCalculator.instance.getDist(
-              Location(pos.latitude, pos.longitude),
-              Location(challenge['lat'], challenge['lng']));
-          if (temp <= 50) {
-            await finishChallenge();
-          }
-          displayDistance = "${temp.toString()}m";
-        }
-        );
-        
-      });
-    } else {
-      setState(() {});
+    if (Global.instance.isChallengeStarted) {
+      Global.instance.challenge.distance = DistCalculator.instance.getDist(
+          Location(pos?.latitude ?? 0, pos?.longitude ?? 0),
+          Location(
+              Global.instance.challenge.lat, Global.instance.challenge.lng));
     }
   }
 
   Future<void> initiateChallenge() async {
     if (await Firestore.instance.isChallengePending()) return;
-    Marker temp = DistCalculator.instance.initiateChallenge(
+    pos = await Geolocation.instance.position;
+
+    Global.instance.challenge = DistCalculator.instance.initiateChallenge(
         minDist, maxDist, LatLng(pos!.latitude, pos!.longitude));
     await Firestore.instance.onChallengeStart(
-        GeoPoint(temp.point.latitude, temp.point.longitude),
-        GeoPoint(pos!.latitude, pos!.longitude));
+        GeoPoint(Global.instance.challenge.lat, Global.instance.challenge.lng),
+        GeoPoint(pos!.latitude, pos!.longitude),
+        Global.instance.challenge.totalDistance);
+
+    Global.instance.isChallengeStarted = true;
+    Global.instance.challenge.distance = DistCalculator.instance.getDist(
+        Location(pos!.latitude, pos!.longitude),
+        Location(Global.instance.challenge.lat, Global.instance.challenge.lng));
+    Global.instance.startTimer();
+
     setState(() {
-      isAlreadyStarted = true;
-      daily = temp;
-      distance = DistCalculator.instance.getDist(
-          Location(pos!.latitude, pos!.longitude),
-          Location(daily.point.latitude, daily.point.longitude));
-      displayDistance = "${distance.toString()}m";
-      _timer = Timer.periodic(const Duration(seconds: 1), (_) async {
-        Position pos = await Geolocation.instance.position;
-        int temp = DistCalculator.instance.getDist(
-            Location(pos.latitude, pos.longitude),
-            Location(daily.point.latitude, daily.point.longitude));
-        if (temp <= 50) {
-          await finishChallenge();
-        }
-        displayDistance = "${temp.toString()}m";
-      });
+      challengeMarker = Global.instance.challengeMarker;
     });
   }
 
-  //
-
-  Future<void> finishChallenge() async {
-    _timer?.cancel();
-    Global.instance.latToAdd = daily.point.latitude;
-    Global.instance.lngToAdd = daily.point.longitude;
-    Global.instance.distanceToAdd = DistCalculator.instance.getDist(
-        Location(pos!.latitude, pos!.longitude),
-        Location(daily.point.latitude, daily.point.longitude));
-
-    context.go('/photopage');
-  }
-
   void handleRedirection(int index) {
-    if (index == 1) return;
-    if (index == 0) {
-      context.go('/profileview');
-    } else {
-      context.go('/historyviewmap');
+    switch (index) {
+      case 0:
+        context.go('/profileview');
+        break;
+      case 1:
+        return;
+      case 2:
+        context.go('/historyviewmap');
+        break;
+      case 3:
+        context.go('/historyviewphotos');
+        break;
     }
   }
 
   @override
   void initState() {
     super.initState();
-    Firestore.instance.onFirstLogin();
-    Firestore.instance.checkStreak();
-    getChallengeIfAlreadyStarted();
+    Global.instance.onStart();
+
+    challengeStateStream =
+        Global.instance.challengeStateStream.listen((event) async {
+      if (event == 1) {
+        context.go("/photopage");
+      }
+    });
 
     final mySystemTheme = SystemUiOverlayStyle.light
         .copyWith(systemNavigationBarColor: Colors.white);
@@ -137,117 +95,205 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void dispose() {
+    challengeStateStream?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-            title: Global.instance.streak == -1
-                ? FutureBuilder(
-                    future: Global.instance.getStreak(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState != ConnectionState.done) {
-                        return Container();
-                      } else {
-                        return Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Row(
+      appBar: AppBar(
+          title: Global.instance.streak == -1
+              ? FutureBuilder(
+                  future: Global.instance.fetchStreak(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState != ConnectionState.done) {
+                      return Container();
+                    } else {
+                      return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            GestureDetector(
+                              onTap: () => showDialog(
+                                  context: context,
+                                  builder: (context) => const AlertDialog(
+                                        title: Text("Streak"),
+                                        content: Text(
+                                            "This is your streak.\n\nA streak is a continuous series of challenges completed on consecutive days.\n\nBy completing challenges day after day, you can increase your streak."),
+                                      )),
+                              child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text("${Global.instance.streak}"),
-                                    const EmojiText(text: '🔥')
+                                    const EmojiText(text: '🔥'),
+                                    Text(" ${Global.instance.streak}", style: const TextStyle(fontSize: 14),),
                                   ]),
-                              const Text(' '),
-                              Text(
-                                  "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m"),
-                            ]);
-                      }
-                    },
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                        Row(
+                            ),
+                            const Text(' '),
+                            GestureDetector(
+                                onTap: () => showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                          title: const Text("Radius"),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text(
+                                            "This is the radius the challenge goal can be generated in."), const SizedBox(height: 20,), Image.asset("assets/img/radius.png", alignment: Alignment.center), const SizedBox(height: 20,), const Text("The first value is the minimum distance between you and the challenge goal and the last value is the maximum distance between you and the challenge goal.")
+                                            //"),
+                                ]))),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.blur_circular),
+                                    Text(
+                                      Global.instance.radiusText,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ))
+                          ]);
+                    }
+                  },
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                      GestureDetector(
+                        onTap: () => showDialog(
+                            context: context,
+                            builder: (context) => const AlertDialog(
+                                  title: Text("Streak"),
+                                  content: Text(
+                                      "This is your streak.\n\nA streak is a continuous series of challenges completed on consecutive days.\n\nBy completing challenges day after day, you can increase your streak."),
+                                )),
+                        child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text("${Global.instance.streak}"),
-                              const EmojiText(text: '🔥')
+                              const EmojiText(text: '🔥'),
+                              Text(
+                                " ${Global.instance.streak}",
+                                style: const TextStyle(fontSize: 14),
+                              )
                             ]),
-                        const Text(' '),
-                        Text(
-                            "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m"),
-                      ])),
-        bottomNavigationBar: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Profile',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.location_pin),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.timeline),
-              label: 'History',
-            ),
-          ],
-          currentIndex: 1,
-          unselectedItemColor: Colors.black,
-          selectedItemColor:
-              const Color(0xff725ac1), //,const Color(0xff8D86C9),
-          onTap: handleRedirection,
-          backgroundColor: Colors.white,
-        ),
-        body: Stack(children: [
-          FutureBuilder(
-              future: getPosition(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState != ConnectionState.done) {
-                  return const Center(
-                      child: CircularProgressIndicator(
-                    color: Color(0xff725ac1),
-                    backgroundColor: Colors.white,
-                  ));
-                } else {
-                  return FlutterMap(
-                    options: MapOptions(
-                      center: LatLng(pos?.latitude ?? 0,
-                          pos?.longitude ?? 0), //pos!.latitude, pos!.longitude
-                      zoom: 15.0,
-                      minZoom: 2,
-                      maxZoom: 18.3,
-                      keepAlive: true,
-                      interactiveFlags:
-                          InteractiveFlag.all & ~InteractiveFlag.rotate,
-                      maxBounds: LatLngBounds(
-                          LatLng(-90, -180.0), LatLng(90.0, 180.0)),
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                        subdomains: const ['a', 'b', 'c'],
                       ),
-                      CurrentLocationLayer(),
-                      MarkerLayer(
-                        markers: [daily],
-                      )
-                    ],
-                  );
-                }
-              }),
-          Align(
-              alignment: Alignment.bottomCenter,
-              child: ElevatedButton(
-                onPressed: initiateChallenge,
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(12.0),
+                      const Text(' '),
+                      GestureDetector(
+                          onTap: () => showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                          title: const Text("Radius"),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text(
+                                            "This is the radius the challenge goal can be generated in."), const SizedBox(height: 20,), Image.asset("assets/img/radius.png", alignment: Alignment.center,), const SizedBox(height: 20,), const Text("The first value is the minimum distance between you and the challenge goal and the last value is the maximum distance between you and the challenge goal.")
+                                            //"),
+                                ]))),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.blur_circular),
+                              Text(
+                                Global.instance.radiusText,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            ],
+                          ))
+                    ])),
+      bottomNavigationBar: BottomAppBar(
+          child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+            Tooltip(
+              message: "Profile",
+              child: IconButton(
+                icon: const Icon(
+                  Icons.person,
+                  color: Colors.black,
                 ),
-                child: isAlreadyStarted
-                    ? Text(displayDistance)
-                    : const Text('start'),
-              ))
-        ]));
+                color: Colors.white,
+                onPressed: () => handleRedirection(0),
+              ),
+            ),
+            Tooltip(
+              message: "Home",
+              child: IconButton(
+                icon: const Icon(
+                  Icons.home,
+                  color: Color(0xff725ac1),
+                ),
+                color: Colors.white,
+                onPressed: () => handleRedirection(1),
+              ),
+            ),
+            Tooltip(
+              message: "History",
+              child: IconButton(
+                  icon: const Icon(
+                    Icons.timeline,
+                    color: Colors.black,
+                  ),
+                  color: Colors.white,
+                  onPressed: () => handleRedirection(2)),
+            ),
+            Tooltip(
+              message: "Photos",
+              child: IconButton(
+                  icon: const Icon(
+                    Icons.photo,
+                    color: Colors.black,
+                  ),
+                  color: Colors.white,
+                  onPressed: () => handleRedirection(3)),
+            )
+          ])),
+      body: FutureBuilder(
+          future: getPosition(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Center(
+                  child: CircularProgressIndicator(
+                color: Color(0xff725ac1),
+                backgroundColor: Colors.white,
+              ));
+            } else {
+              return FlutterMap(
+                options: MapOptions(
+                  center: LatLng(pos?.latitude ?? 0,
+                      pos?.longitude ?? 0), //pos!.latitude, pos!.longitude
+                  zoom: 15.0,
+                  minZoom: 2,
+                  maxZoom: 18.3,
+                  keepAlive: true,
+                  interactiveFlags:
+                      InteractiveFlag.all & ~InteractiveFlag.rotate,
+                  maxBounds:
+                      LatLngBounds(LatLng(-90, -180.0), LatLng(90.0, 180.0)),
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    subdomains: const ['a', 'b', 'c'],
+                  ),
+                  CurrentLocationLayer(),
+                  MarkerLayer(
+                    markers: [challengeMarker],
+                  )
+                ],
+              );
+            }
+          }),
+      floatingActionButton: FloatingActionButton(
+          tooltip: Global.instance.isChallengeStarted
+              ? "Remaining distance"
+              : "Initiate challenge",
+          onPressed:
+              Global.instance.isChallengeStarted ? null : initiateChallenge,
+          child: Global.instance.isChallengeStarted
+              ? Text(Global.instance.displayDistance)
+              : const Icon(Icons.bolt)),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
   }
 }

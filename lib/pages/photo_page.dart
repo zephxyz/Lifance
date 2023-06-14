@@ -33,7 +33,7 @@ class _PhotoPageState extends State<PhotoPage> {
       );
 
       await controller!.initialize();
-    
+
       controller!.setFlashMode(FlashMode.off);
     }
   }
@@ -41,13 +41,15 @@ class _PhotoPageState extends State<PhotoPage> {
   @override
   void initState() {
     super.initState();
-    final mySystemTheme = SystemUiOverlayStyle.light.copyWith(systemNavigationBarColor: Colors.black);
+    final mySystemTheme = SystemUiOverlayStyle.light
+        .copyWith(systemNavigationBarColor: Colors.black);
     SystemChrome.setSystemUIOverlayStyle(mySystemTheme);
   }
 
   @override
   void dispose() {
-    final mySystemTheme = SystemUiOverlayStyle.light.copyWith(systemNavigationBarColor: Colors.white);
+    final mySystemTheme = SystemUiOverlayStyle.light
+        .copyWith(systemNavigationBarColor: Colors.white);
     SystemChrome.setSystemUIOverlayStyle(mySystemTheme);
     controller?.dispose();
     super.dispose();
@@ -75,19 +77,19 @@ class _PhotoPageState extends State<PhotoPage> {
     newFile.writeAsBytesSync(file.readAsBytesSync());
     file.deleteSync(recursive: true);
     await Firestore.instance.addChallengeToHistory(
-        Global.instance.latToAdd,
-        Global.instance.lngToAdd,
-        Global.instance.distanceToAdd,
+        Global.instance.challenge.lat,
+        Global.instance.challenge.lng,
+        Global.instance.challenge.totalDistance,
         savedImagePath);
 
-    Global.instance.reset();
+    Global.instance.resetChallengeValues();
 
     goToHome();
   }
 
   Future<void> skipTakingPhoto() async {
-    await Firestore.instance.addChallengeToHistory(Global.instance.latToAdd,
-        Global.instance.lngToAdd, Global.instance.distanceToAdd, null);
+    await Firestore.instance.addChallengeToHistory(Global.instance.challenge.lat,
+        Global.instance.challenge.lng, Global.instance.challenge.totalDistance, null);
 
     goToHome();
   }
@@ -158,8 +160,9 @@ class _PhotoPageState extends State<PhotoPage> {
                                   ElevatedButton(
                                       onPressed: skipTakingPhoto,
                                       style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.all(28),
-                                          backgroundColor: Colors.black,),
+                                        padding: const EdgeInsets.all(28),
+                                        backgroundColor: Colors.black,
+                                      ),
                                       child: const Text('Skip'))
                                 ],
                               )),

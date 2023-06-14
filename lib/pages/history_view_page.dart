@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -23,6 +24,18 @@ class HistoryViewPageMap extends StatefulWidget {
 class _HistoryViewPageMapState extends State<HistoryViewPageMap> {
   List<Marker> markers = [];
   Position? pos;
+  StreamSubscription<int>? challengeStateStream;
+  
+  @override
+  void initState() {
+    super.initState();
+    challengeStateStream = Global.instance.challengeStateStream.listen((event) {
+      if(event == 1) {
+        context.go('/photopage');
+      }
+    });
+  }
+
   void handleRedirection(int index) {
     if (index == 2) return;
     if (index == 0) {
@@ -47,7 +60,7 @@ class _HistoryViewPageMapState extends State<HistoryViewPageMap> {
       appBar: AppBar(
           title: Global.instance.streak == -1
               ? FutureBuilder(
-                  future: Global.instance.getStreak(),
+                  future: Global.instance.fetchStreak(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState != ConnectionState.done) {
                       return Container();
@@ -135,12 +148,7 @@ class _HistoryViewPageMapState extends State<HistoryViewPageMap> {
               }
             }),
       ]),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.go('/historyviewphotos');
-        },
-        child: const Icon(Icons.photo),
-      ),
+      
     );
   }
 }
@@ -154,6 +162,8 @@ class HistoryViewPagePhotos extends StatefulWidget {
 
 class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
   List<PhotoInfo> photos = [];
+
+  StreamSubscription<int>? challengeStateStream;
 
   void handleRedirection(int index) {
     if (index == 2) return;
@@ -171,35 +181,19 @@ class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
 
   List<Widget> getChildren() {
     List<Widget> children = [];
-    List<Widget> columns = [];
 
-   
     for (int i = 0; i < photos.length; i++) {
       final photo = photos[i];
-      
-        
-        columns.add(Column(children: [
-          GestureDetector(onTap: () => print("success$i"), child: Image.file(File(photo.getPath), height: 100, width: 100)),
-          Text(DateFormat('yyyy-MM-dd').format(photo.getDate.toDate())),
-        ]));
-        
-        if (i % 3 == 2 && i != 0) {
-          children.add(Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: columns));
-          columns = [];
-        }
-      
-    }
 
-    if (columns.isNotEmpty){
-children.add(Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: columns));
-    }
+     children.add(
+        GestureDetector(
+            onTap: () => print("success$i"),
+            child: Image.file(File(photo.getPath), height: 100, width: 100, fit: BoxFit.cover,)),
+        //Text(DateFormat('yyyy-MM-dd').format(photo.getDate.toDate())),
+      );
+
       
+      }
 
     return children;
   }
@@ -208,6 +202,11 @@ children.add(Row(
   void initState() {
     super.initState();
     getPhotos();
+    challengeStateStream = Global.instance.challengeStateStream.listen((event) {
+      if(event == 1) {
+        context.go('/photopage');
+      }
+    });
   }
 
   @override
@@ -216,7 +215,7 @@ children.add(Row(
       appBar: AppBar(
           title: Global.instance.streak == -1
               ? FutureBuilder(
-                  future: Global.instance.getStreak(),
+                  future: Global.instance.fetchStreak(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState != ConnectionState.done) {
                       return Container();
@@ -271,19 +270,16 @@ children.add(Row(
         onTap: handleRedirection,
         backgroundColor: Colors.white,
       ),
-      body: ListView(
+      body: GridView(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+        ),
         children: [
-          const SizedBox(
-            height: 20,
-          ),
           for (var widget in getChildren()) widget
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.go('/historyviewmap');
-        },
-        child: const Icon(Icons.map),
       ),
     );
   }
