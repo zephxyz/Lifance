@@ -1,13 +1,14 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tg_proj/pages/get_permission_page.dart';
-import 'package:tg_proj/pages/history_view_page.dart';
-import 'package:tg_proj/pages/profile_view_page.dart';
-import 'package:tg_proj/pages/home_page.dart';
-import 'package:tg_proj/pages/login_register_page.dart';
-import 'package:tg_proj/misc/auth.dart';
-import 'package:tg_proj/misc/geolocation.dart';
-import 'package:tg_proj/pages/photo_page.dart';
+import 'package:lifance/pages/challenge_completed_page.dart';
+import 'package:lifance/pages/get_permission_page.dart';
+import 'package:lifance/pages/history_view_page.dart';
+import 'package:lifance/pages/profile_view_page.dart';
+import 'package:lifance/pages/home_page.dart';
+import 'package:lifance/pages/login_register_page.dart';
+import 'package:lifance/misc/auth.dart';
+import 'package:lifance/misc/geolocation.dart';
+import 'package:lifance/pages/photo_page.dart';
 
 final router = GoRouter(
   initialLocation: '/auth',
@@ -62,6 +63,10 @@ final router = GoRouter(
       path: '/photopage',
       pageBuilder: (context, state) =>
           const NoTransitionPage(child: PhotoPage()),
-    )
+    ),
+    GoRoute(
+        path: '/challengecompleted',
+        pageBuilder: (context, state) =>
+            const NoTransitionPage(child: ChallengeCompletedPage())),
   ],
 );

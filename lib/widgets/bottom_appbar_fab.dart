@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:haversine_distance/haversine_distance.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:tg_proj/misc/challenge_state.dart';
-import 'package:tg_proj/misc/firestore.dart';
-import 'package:tg_proj/misc/global.dart';
-import 'package:tg_proj/misc/geolocation.dart';
+import 'package:lifance/misc/challenge_state.dart';
+import 'package:lifance/misc/firestore.dart';
+import 'package:lifance/misc/global.dart';
+import 'package:lifance/misc/geolocation.dart';
 
 import '../misc/dist_calc.dart';
 
@@ -26,7 +26,7 @@ class BottomAppbarFloatingActionButtonState
   final maxDist = 50;
   String displayDistance = Global.instance.displayDistance;
 
-  StreamSubscription<ChallengeState>? challengeStateStream;
+  StreamSubscription<ChallengeState>? challengeStateListener;
 
   Future<void> initiateChallenge() async {
     if (await Firestore.instance.isChallengePending()) return;
@@ -54,12 +54,14 @@ class BottomAppbarFloatingActionButtonState
   @override
   void initState() {
     super.initState();
-    challengeStateStream =
+    challengeStateListener =
         Global.instance.challengeStateStream.listen((event) async {
       if (event == ChallengeState.distanceUpdated) {
         setState(() {
           displayDistance = Global.instance.displayDistance;
         });
+      } else if (event == ChallengeState.ongoingStateChanged) {
+        setState(() {});
       }
     });
   }

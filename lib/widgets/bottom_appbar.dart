@@ -58,6 +58,7 @@ class _MyBottomAppBarState extends State<MyBottomAppBar> {
               onPressed: () => handleRedirection(1),
             ),
           ),
+          const SizedBox(),
           Tooltip(
             message: "History",
             child: IconButton(

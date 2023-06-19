@@ -1,14 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:haversine_distance/haversine_distance.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:tg_proj/misc/firestore.dart';
+import 'package:lifance/misc/firestore.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:tg_proj/misc/challenge.dart';
+import 'package:lifance/misc/challenge.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:tg_proj/misc/geolocation.dart';
-import 'package:tg_proj/misc/challenge_state.dart';
-
-import 'dist_calc.dart';
+import 'package:lifance/misc/geolocation.dart';
+import 'package:lifance/misc/challenge_state.dart';
+import 'package:lifance/misc/dist_calc.dart';
 
 class Global {
   static final Global instance = Global._();
@@ -22,7 +22,7 @@ class Global {
   final int _baseMinDistance = 300;
   final int _baseMaxDistance = 700;
 
-  Challenge challenge = Challenge(0, 0, 0, 0);
+  Challenge challenge = Challenge(0, 0, 0, 0, null, null);
   bool isChallengeStarted = false;
 
   final StreamController<ChallengeState> _challengeStateController =
@@ -36,14 +36,23 @@ class Global {
   void resetAll() {
     firstLaunch = true;
     streak = -1;
-    challenge = Challenge(0, 0, 0, 0);
+    challenge = Challenge(0, 0, 0, 0, null, null);
     isChallengeStarted = false;
     _timer?.cancel();
+  }
+
+  void abandonChallenge() {
+    _timer?.cancel();
+    isChallengeStarted = false;
+    resetChallengeValues();
+    _challengeStateController.add(ChallengeState.ongoingStateChanged);
   }
 
   void finishChallenge() {
     _timer?.cancel();
     isChallengeStarted = false;
+    challenge.timeOfEnd = Timestamp.now();
+    Firestore.instance.setTimeOfEnd(challenge.timeOfEnd!);
     _challengeStateController.add(ChallengeState.completed);
   }
 
@@ -58,7 +67,6 @@ class Global {
           finishChallenge();
         }
 
-        //_challengeStateController.add(ChallengeState.started);
         _challengeStateController.add(ChallengeState.distanceUpdated);
       });
     });
@@ -66,7 +74,7 @@ class Global {
 
   /// Resets the challenge values that are added to the database
   void resetChallengeValues() {
-    challenge = Challenge(0, 0, 0, 0);
+    challenge = Challenge(0, 0, 0, 0, null, null);
   }
 
   Future<void> fetchStreak() async {
@@ -87,20 +95,25 @@ class Global {
 
   Future<void> getChallengeIfAlreadyStarted() async {
     final challengeInfo = await Firestore.instance.getChallengePending();
-    if (challengeInfo != null) {
+    if (challengeInfo?['lat'] != null) {
       await Geolocation.instance.position.then((pos) {
         challenge.distance = DistCalculator.instance.getDist(
             Location(pos.latitude, pos.longitude),
-            Location(challengeInfo['lat'], challengeInfo['lng']));
+            Location(challengeInfo?['lat'], challengeInfo?['lng']));
       });
 
-      challenge.lat = challengeInfo['lat'];
-      challenge.lng = challengeInfo['lng'];
-      challenge.totalDistance = challengeInfo['total_distance'];
-      isChallengeStarted = true;
-      startTimer();
-      _challengeStateController.add(ChallengeState.started);
-      _challengeStateController.add(ChallengeState.distanceUpdated);
+      challenge.lat = challengeInfo?['lat'];
+      challenge.lng = challengeInfo?['lng'];
+      challenge.totalDistance = challengeInfo?['total_distance'];
+      challenge.timeOfStart = challengeInfo?['time_of_start'];
+      if (challengeInfo?['time_of_end'] != null) {
+        challenge.timeOfEnd = challengeInfo?['time_of_end'];
+        _challengeStateController.add(ChallengeState.completed);
+      } else {
+        startTimer();
+        _challengeStateController.add(ChallengeState.ongoingStateChanged);
+        _challengeStateController.add(ChallengeState.distanceUpdated);
+      }
     }
   }
 
@@ -129,6 +142,6 @@ class Global {
   String get displayDistance => "${challenge.distance.toString()}m";
 
   void broadcastStart() {
-    _challengeStateController.add(ChallengeState.started);
+    _challengeStateController.add(ChallengeState.ongoingStateChanged);
   }
 }

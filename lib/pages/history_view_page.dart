@@ -2,16 +2,17 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import 'package:tg_proj/misc/global.dart';
-import 'package:tg_proj/misc/geolocation.dart';
-import 'package:tg_proj/misc/firestore.dart';
+import 'package:lifance/misc/global.dart';
+import 'package:lifance/misc/geolocation.dart';
+import 'package:lifance/misc/firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:tg_proj/widgets/bottom_appbar_fab.dart';
-import 'package:tg_proj/misc/challenge_state.dart';
+import 'package:lifance/pages/photo_details_page.dart';
+import 'package:lifance/widgets/bottom_appbar_fab.dart';
+import 'package:lifance/misc/challenge_state.dart';
 
 import '../widgets/appbar.dart';
 import '../widgets/bottom_appbar.dart';
@@ -27,20 +28,22 @@ class HistoryViewPageMap extends StatefulWidget {
 class _HistoryViewPageMapState extends State<HistoryViewPageMap> {
   List<Marker> markers = [];
   Position? pos;
-  StreamSubscription<ChallengeState>? challengeStateStream;
+  StreamSubscription<ChallengeState>? challengeStateListener;
 
   @override
   void initState() {
     super.initState();
-    challengeStateStream = Global.instance.challengeStateStream.listen((event) {
+    challengeStateListener =
+        Global.instance.challengeStateStream.listen((event) {
       if (event == ChallengeState.completed) {
-        context.go('/photopage');
+        context.go('/challengecompleted');
       }
     });
   }
+
   @override
   void dispose() {
-    challengeStateStream?.cancel();
+    challengeStateListener?.cancel();
     super.dispose();
   }
 
@@ -109,11 +112,22 @@ class HistoryViewPagePhotos extends StatefulWidget {
 class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
   List<PhotoInfo> photos = [];
 
-  StreamSubscription<ChallengeState>? challengeStateStream;
+  StreamSubscription<ChallengeState>? challengeStateListener;
 
   Future<void> getPhotos() async {
     photos = await Firestore.instance.getHistoryPhotos();
     setState(() {});
+  }
+
+  void zoomIn(int index) {
+    final mySystemTheme = SystemUiOverlayStyle.dark
+        .copyWith(systemNavigationBarColor: Colors.black);
+    SystemChrome.setSystemUIOverlayStyle(mySystemTheme);
+    Navigator.of(context).push(PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (BuildContext context, _, __) {
+          return PhotoDetailsPage(photoInfo: photos[index]);
+        }));
   }
 
   List<Widget> getChildren() {
@@ -124,7 +138,7 @@ class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
 
       children.add(
         GestureDetector(
-            onTap: () => print("success$i"),
+            onTap: () => zoomIn(i),
             child: Image.file(
               File(photo.getPath),
               height: 100,
@@ -142,16 +156,18 @@ class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
   void initState() {
     super.initState();
     getPhotos();
-    challengeStateStream = Global.instance.challengeStateStream.listen((event) {
+    challengeStateListener =
+        Global.instance.challengeStateStream.listen((event) {
       if (event == ChallengeState.completed) {
-        context.go('/photopage');
+        context.go('/challengecompleted');
       }
     });
+    
   }
 
   @override
   void dispose() {
-    challengeStateStream?.cancel();
+    challengeStateListener?.cancel();
     super.dispose();
   }
 

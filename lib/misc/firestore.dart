@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
-import 'package:tg_proj/misc/auth.dart';
-import 'package:tg_proj/misc/global.dart';
+import 'package:lifance/misc/auth.dart';
+import 'package:lifance/misc/global.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:tg_proj/misc/photo_info.dart';
-import 'package:tg_proj/misc/user_info.dart';
+import 'package:lifance/misc/photo_info.dart';
+import 'package:lifance/misc/user_info.dart';
 
 class Firestore {
   static final Firestore instance = Firestore._();
@@ -19,6 +19,16 @@ class Firestore {
     user = Auth.instance.currentUser;
   }
 
+  Future<void> onChallengeAbandon() async {
+    if (user == null) {
+      return;
+    }
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user?.uid)
+        .update({'challenge_pending': null});
+  }
+  
   Future<int> getStreak() async {
     if (user == null) {
       return 0;
@@ -34,7 +44,7 @@ class Firestore {
     if (user == null) {
       return;
     }
-     await FirebaseFirestore.instance.collection('users').doc(user?.uid).update({
+    await FirebaseFirestore.instance.collection('users').doc(user?.uid).update({
       'challenge_pending': {
         'lat': Global.instance.challenge.lat,
         'lng': Global.instance.challenge.lng,
@@ -94,6 +104,30 @@ class Firestore {
     });
   }
 
+  Future<void> setTimeOfEnd(Timestamp timeOfEnd) async {
+    if (user == null) {
+      return;
+    }
+
+    final docSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user?.uid)
+        .get();
+
+    final challengePending = docSnapshot.data()?['challenge_pending'];
+    if (challengePending != null) {
+      final updatedChallengePending = {
+        ...challengePending,
+        'time_of_end': timeOfEnd,
+      };
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user?.uid)
+          .update({'challenge_pending': updatedChallengePending});
+    }
+  }
+
   Future<bool> isChallengePending() async {
     if (user == null) {
       return false;
@@ -120,6 +154,7 @@ class Firestore {
         'lat_of_start': startPos.latitude,
         'lng_of_start': startPos.longitude,
         'total_distance': totalDistance,
+        'time_of_end': null,
       }
     });
   }

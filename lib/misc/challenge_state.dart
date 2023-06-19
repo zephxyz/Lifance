@@ -1,7 +1,5 @@
-
-
-enum ChallengeState{
-  started,
+enum ChallengeState {
+  ongoingStateChanged,
   distanceUpdated,
   completed,
 }

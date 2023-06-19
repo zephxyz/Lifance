@@ -11,7 +11,7 @@
 
 
    <application
-        android:label="tg_proj"
+        android:label="Lifance"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

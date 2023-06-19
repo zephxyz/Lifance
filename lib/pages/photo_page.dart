@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:tg_proj/misc/global.dart';
-import 'package:tg_proj/misc/firestore.dart';
+import 'package:lifance/misc/global.dart';
+import 'package:lifance/misc/firestore.dart';
 import 'package:flutter/services.dart';
 
 class PhotoPage extends StatefulWidget {

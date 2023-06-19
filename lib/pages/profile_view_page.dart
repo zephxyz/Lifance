@@ -1,17 +1,16 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tg_proj/misc/auth.dart';
-import 'package:tg_proj/misc/firestore.dart';
-import 'package:tg_proj/misc/global.dart';
-import 'package:tg_proj/widgets/bottom_appbar.dart';
-import 'package:tg_proj/widgets/bottom_appbar_fab.dart';
-import 'package:tg_proj/widgets/emoji_text.dart';
+import 'package:lifance/misc/auth.dart';
+import 'package:lifance/misc/firestore.dart';
+import 'package:lifance/misc/global.dart';
+import 'package:lifance/widgets/bottom_appbar.dart';
+import 'package:lifance/widgets/bottom_appbar_fab.dart';
+import 'package:lifance/widgets/emoji_text.dart';
 import 'package:intl/intl.dart';
-import 'package:tg_proj/misc/challenge_state.dart';
-import 'package:tg_proj/misc/user_info.dart';
+import 'package:lifance/misc/challenge_state.dart';
+import 'package:lifance/misc/user_info.dart';
 
 class ProfileViewPage extends StatefulWidget {
   const ProfileViewPage({super.key});
@@ -25,7 +24,7 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   bool loaded = false;
   String _deleteErrMsg = "";
 
-  StreamSubscription<ChallengeState>? challengeStateStream;
+  StreamSubscription<ChallengeState>? challengeStateListener;
 
   Future<void> signOut() async {
     await Auth.instance.signOut().then((_) {
@@ -33,22 +32,10 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
       Global.instance.resetAll();
       goToLoginPage();
     });
-    goToLoginPage();
   }
 
   void goToLoginPage() {
     context.go('/auth');
-  }
-
-  Future<void> deleteAccount() async {}
-
-  void handleRedirection(int index) {
-    if (index == 0) return;
-    if (index == 1) {
-      context.go('/');
-    } else {
-      context.go('/historyviewmap');
-    }
   }
 
   Future<void> onLoad() async {
@@ -62,16 +49,17 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   void initState() {
     super.initState();
     onLoad();
-    challengeStateStream = Global.instance.challengeStateStream.listen((event) {
+    challengeStateListener =
+        Global.instance.challengeStateStream.listen((event) {
       if (event == ChallengeState.completed) {
-        context.go('/photopage');
+        context.go('/challengecompleted');
       }
     });
   }
 
   @override
   void dispose() {
-    challengeStateStream?.cancel();
+    challengeStateListener?.cancel();
     super.dispose();
   }
 
@@ -80,7 +68,37 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
     var deleteController = TextEditingController();
     String deleteText = "";
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Tooltip(
+              message: "Sign out",
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: IconButton(
+                    onPressed: () => showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                              title: const Text("Sign out"),
+                              content: const Text(
+                                  "Are you sure you want to sign out?"),
+                              actions: [
+                                TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    child: const Text("Cancel")),
+                                TextButton(
+                                    onPressed: () => signOut(),
+                                    child: const Text("Confirm")),
+                              ],
+                            )),
+                    icon: const Icon(Icons.logout)),
+              ),
+            ),
+          ],
+        ),
+      ),
       bottomNavigationBar: const MyBottomAppBar(
         currentPage: 0,
       ),
@@ -612,30 +630,7 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                   ]),
             ),
           ),
-          Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: FloatingActionButton(
-                  onPressed: () => showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                            title: const Text("Sign out"),
-                            content: const Text(
-                                "Are you sure you want to sign out?"),
-                            actions: [
-                              TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text("Cancel")),
-                              TextButton(
-                                  onPressed: () => signOut(),
-                                  child: const Text("Confirm")),
-                            ],
-                          )),
-                  child: const Icon(Icons.logout)),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: FloatingActionButton(
+          ElevatedButton(
                 onPressed: () => showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -655,7 +650,9 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                   });
                                 },
                               ),
-                              const SizedBox(height: 8,),
+                              const SizedBox(
+                                height: 8,
+                              ),
                               Text(_deleteErrMsg,
                                   style: const TextStyle(color: Colors.red)),
                             ],
@@ -674,11 +671,10 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                       Global.instance.resetAll();
                                       goToLoginPage();
                                     });
-
-                                    
                                   } else {
                                     setState(() {
-                                      _deleteErrMsg = "Type 'delete' to confirm";
+                                      _deleteErrMsg =
+                                          "Type 'delete' to confirm";
                                     });
                                   }
                                 },
@@ -688,13 +684,15 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                 )),
                           ],
                         )),
-                backgroundColor: Colors.red,
-                child: const Icon(Icons.delete_forever),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text("Delete account"),
               ),
-            ),
-          ]),
-        ],
-      ),
+              const SizedBox(height: 26,),
+          
+            ],),
+          
+
+      
       floatingActionButton: const BottomAppbarFloatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );

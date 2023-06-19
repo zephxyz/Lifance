@@ -2,20 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:tg_proj/misc/challenge_state.dart';
-import 'package:tg_proj/widgets/bottom_appbar_fab.dart';
-import 'package:tg_proj/misc/dist_calc.dart';
-import 'package:tg_proj/misc/geolocation.dart';
+import 'package:lifance/misc/challenge_state.dart';
+import 'package:lifance/misc/firestore.dart';
+import 'package:lifance/widgets/bottom_appbar_fab.dart';
+import 'package:lifance/misc/dist_calc.dart';
+import 'package:lifance/misc/geolocation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'package:haversine_distance/haversine_distance.dart';
-import 'package:tg_proj/misc/firestore.dart';
-import 'package:tg_proj/misc/global.dart';
-import 'package:tg_proj/widgets/emoji_text.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:lifance/misc/global.dart';
 import '../widgets/appbar.dart';
 import '../widgets/bottom_appbar.dart';
 
@@ -29,7 +26,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Position? pos;
   Marker challengeMarker = Global.instance.challengeMarker;
-  StreamSubscription<ChallengeState>? challengeStateStream;
+  StreamSubscription<ChallengeState>? challengeStateListener;
 
   Future<void> getPosition() async {
     pos = await Geolocation.instance.position;
@@ -45,18 +42,21 @@ class _HomePageState extends State<HomePage> {
     await DistCalculator.instance.refreshChallenge();
   }
 
-  Future<void> abandonChallenge() async {}
+  Future<void> abandonChallenge() async {
+    await Firestore.instance.onChallengeAbandon();
+    Global.instance.abandonChallenge();
+  }
 
   @override
   void initState() {
     super.initState();
     Global.instance.onStart();
 
-    challengeStateStream =
+    challengeStateListener =
         Global.instance.challengeStateStream.listen((event) async {
       if (event == ChallengeState.completed) {
-        context.go("/photopage");
-      } else if (event == ChallengeState.started) {
+        context.go("/challengecompleted");
+      } else if (event == ChallengeState.ongoingStateChanged) {
         setState(() {
           challengeMarker = Global.instance.challengeMarker;
         });
@@ -70,7 +70,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    challengeStateStream?.cancel();
+    challengeStateListener?.cancel();
     super.dispose();
   }
 
@@ -149,7 +149,28 @@ class _HomePageState extends State<HomePage> {
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: FloatingActionButton(
-                            onPressed: () => abandonChallenge(),
+                            onPressed: () => showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text("Abandon challenge"),
+                                    content: const Text(
+                                        "Are you sure you want to abandon this challenge? Once a challenge is abandoned, you cannot return to it."),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text("Cancel")),
+                                      TextButton(
+                                          onPressed: () {
+                                            abandonChallenge();
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text("Abandon", style: TextStyle(color: Colors.red),)),
+                                    ],
+                                  );
+                                }),
                             backgroundColor: Colors.red,
                             mini: true,
                             child: const Icon(Icons.close),

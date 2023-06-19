@@ -1,11 +1,12 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:haversine_distance/haversine_distance.dart';
-import 'package:tg_proj/misc/challenge.dart';
-import 'package:tg_proj/misc/global.dart';
+import 'package:lifance/misc/challenge.dart';
+import 'package:lifance/misc/global.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:tg_proj/misc/geolocation.dart';
-import 'package:tg_proj/misc/firestore.dart';
+import 'package:lifance/misc/geolocation.dart';
+import 'package:lifance/misc/firestore.dart';
 
 class DistCalculator {
   static final DistCalculator instance = DistCalculator._();
@@ -78,6 +79,6 @@ class DistCalculator {
         chal.longitude,
         getDist(Location(usr.latitude, usr.longitude),
             Location(chal.latitude, chal.longitude)),
-        distance.floor());
+        distance.floor(), Timestamp.now(), null);
   }
 }
