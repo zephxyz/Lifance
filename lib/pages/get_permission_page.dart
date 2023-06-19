@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:tg_proj/misc/global.dart';
 
 class GetPermissionPage extends StatefulWidget {
   const GetPermissionPage({super.key});
@@ -60,7 +59,7 @@ class _GetPermissionPageState extends State<GetPermissionPage> {
 
   @override
   Widget build(BuildContext context) {
-    return isDeniedForever
+    return !isDeniedForever
         ? Scaffold(
             appBar: AppBar(),
             body: Column(

@@ -65,4 +65,11 @@ class Auth {
       await user.sendEmailVerification();
     }
   }
+
+  Future<void> deleteUser() async {
+    User? user = _firebaseAuth.currentUser;
+    if (user != null) {
+      await user.delete();
+    }
+  }
 }

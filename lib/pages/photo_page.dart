@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:tg_proj/misc/global.dart';
-import 'package:tg_proj/misc/firestore.dart';
+import 'package:lifance/misc/global.dart';
+import 'package:lifance/misc/firestore.dart';
 import 'package:flutter/services.dart';
 
 class PhotoPage extends StatefulWidget {
@@ -33,6 +33,7 @@ class _PhotoPageState extends State<PhotoPage> {
       );
 
       await controller!.initialize();
+
       controller!.setFlashMode(FlashMode.off);
     }
   }
@@ -40,12 +41,16 @@ class _PhotoPageState extends State<PhotoPage> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+    final mySystemTheme = SystemUiOverlayStyle.light
+        .copyWith(systemNavigationBarColor: Colors.black);
+    SystemChrome.setSystemUIOverlayStyle(mySystemTheme);
   }
 
   @override
   void dispose() {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+    final mySystemTheme = SystemUiOverlayStyle.light
+        .copyWith(systemNavigationBarColor: Colors.white);
+    SystemChrome.setSystemUIOverlayStyle(mySystemTheme);
     controller?.dispose();
     super.dispose();
   }
@@ -72,19 +77,19 @@ class _PhotoPageState extends State<PhotoPage> {
     newFile.writeAsBytesSync(file.readAsBytesSync());
     file.deleteSync(recursive: true);
     await Firestore.instance.addChallengeToHistory(
-        Global.instance.latToAdd,
-        Global.instance.lngToAdd,
-        Global.instance.distanceToAdd,
+        Global.instance.challenge.lat,
+        Global.instance.challenge.lng,
+        Global.instance.challenge.totalDistance,
         savedImagePath);
 
-    Global.instance.reset();
+    Global.instance.resetChallengeValues();
 
     goToHome();
   }
 
-  Future<void> skip() async {
-    await Firestore.instance.addChallengeToHistory(Global.instance.latToAdd,
-        Global.instance.lngToAdd, Global.instance.distanceToAdd, null);
+  Future<void> skipTakingPhoto() async {
+    await Firestore.instance.addChallengeToHistory(Global.instance.challenge.lat,
+        Global.instance.challenge.lng, Global.instance.challenge.totalDistance, null);
 
     goToHome();
   }
@@ -153,10 +158,11 @@ class _PhotoPageState extends State<PhotoPage> {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   ElevatedButton(
-                                      onPressed: skip,
+                                      onPressed: skipTakingPhoto,
                                       style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.all(28),
-                                          backgroundColor: Colors.black,),
+                                        padding: const EdgeInsets.all(28),
+                                        backgroundColor: Colors.black,
+                                      ),
                                       child: const Text('Skip'))
                                 ],
                               )),

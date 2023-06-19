@@ -1,9 +1,12 @@
-
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter/material.dart';
 import 'package:haversine_distance/haversine_distance.dart';
+import 'package:lifance/misc/challenge.dart';
+import 'package:lifance/misc/global.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:lifance/misc/geolocation.dart';
+import 'package:lifance/misc/firestore.dart';
 
 class DistCalculator {
   static final DistCalculator instance = DistCalculator._();
@@ -12,12 +15,31 @@ class DistCalculator {
   final double _conversion = 1 / 111111;
   final Random rng = Random();
 
-  Marker initiateChallenge(int minDist, int maxDist, LatLng position) {
-    return Marker( //TODO: fix marker behaving incorrectly
-        point: _calculate(minDist, maxDist, position),
-        anchorPos: AnchorPos.exactly(Anchor(0, 10)),
-        builder: (context) =>
-            const Icon(Icons.room, color: Colors.red, size: 50));
+  Future<void> refreshChallenge() async {
+    Position pos = await Geolocation.instance.position;
+
+    int desiredDistance = getDist(Location(pos.latitude, pos.longitude),
+        Location(Global.instance.challenge.lat, Global.instance.challenge.lng));
+
+    Challenge newChallenge = _calculate(
+        Global.instance.minDistance,
+        Global.instance.maxDistance,
+        LatLng(pos.latitude, pos.longitude),
+        desiredDistance > Global.instance.maxDistance
+            ? Global.instance.maxDistance.toDouble()
+            : desiredDistance.toDouble());
+
+    Global.instance.challenge.lat = newChallenge.lat;
+    Global.instance.challenge.lng = newChallenge.lng;
+    Global.instance.challenge.distance = newChallenge.distance;
+
+    Global.instance.broadcastStart();
+
+    await Firestore.instance.updateChallenge();
+  }
+
+  Challenge initiateChallenge(int minDist, int maxDist, LatLng position) {
+    return _calculate(minDist, maxDist, position, null);
   }
 
   bool checkDist(Location start, Location end) {
@@ -27,16 +49,13 @@ class DistCalculator {
   int getDist(Location start, Location end) =>
       HaversineDistance().haversine(start, end, Unit.METER).floor();
 
-  Future<void> endChallenge() async {}
-
-  LatLng _calculate(int minDist, int maxDist, LatLng usr) {
-
-    
+  Challenge _calculate(
+      int minDist, int maxDist, LatLng usr, double? desiredDist) {
     final double latPortion = rng.nextDouble();
     final double lngPortion = 1 - latPortion;
 
     final double distance =
-        (rng.nextInt(maxDist - minDist) + minDist).toDouble();
+        desiredDist ?? (rng.nextInt(maxDist - minDist) + minDist).toDouble();
     double dist = distance * distance;
     double lat = sqrt(dist * latPortion) * _conversion;
     double lng =
@@ -55,6 +74,11 @@ class DistCalculator {
       chal.longitude -= lng;
     }
 
-    return chal;
+    return Challenge(
+        chal.latitude,
+        chal.longitude,
+        getDist(Location(usr.latitude, usr.longitude),
+            Location(chal.latitude, chal.longitude)),
+        distance.floor(), Timestamp.now(), null);
   }
 }

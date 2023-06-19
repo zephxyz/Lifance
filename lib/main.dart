@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:tg_proj/misc/color_to_material_color.dart';
+import 'package:lifance/misc/color_to_material_color.dart';
 import 'package:flutter/services.dart';
-import 'package:tg_proj/misc/router.dart';
-import 'package:tg_proj/misc/geolocation.dart';
+import 'package:lifance/misc/router.dart';
+import 'package:lifance/misc/geolocation.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: buildMaterialColor(const Color(0xff725ac1)),
         primaryColor: buildMaterialColor(const Color(0xff725ac1)),
+    
       ),
     );
   }
