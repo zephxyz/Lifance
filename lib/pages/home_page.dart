@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:tg_proj/misc/challenge_state.dart';
+import 'package:tg_proj/widgets/bottom_appbar_fab.dart';
 import 'package:tg_proj/misc/dist_calc.dart';
 import 'package:tg_proj/misc/geolocation.dart';
 import 'package:geolocator/geolocator.dart';
@@ -11,8 +13,11 @@ import 'dart:async';
 import 'package:haversine_distance/haversine_distance.dart';
 import 'package:tg_proj/misc/firestore.dart';
 import 'package:tg_proj/misc/global.dart';
-import 'package:tg_proj/misc/emoji_text.dart';
+import 'package:tg_proj/widgets/emoji_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../widgets/appbar.dart';
+import '../widgets/bottom_appbar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -24,10 +29,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Position? pos;
   Marker challengeMarker = Global.instance.challengeMarker;
-  StreamSubscription<int>? challengeStateStream;
-
-  final int minDist = 0;
-  final int maxDist = 50;
+  StreamSubscription<ChallengeState>? challengeStateStream;
 
   Future<void> getPosition() async {
     pos = await Geolocation.instance.position;
@@ -39,43 +41,9 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> initiateChallenge() async {
-    if (await Firestore.instance.isChallengePending()) return;
-    pos = await Geolocation.instance.position;
+  Future<void> refreshChallenge() async {}
 
-    Global.instance.challenge = DistCalculator.instance.initiateChallenge(
-        minDist, maxDist, LatLng(pos!.latitude, pos!.longitude));
-    await Firestore.instance.onChallengeStart(
-        GeoPoint(Global.instance.challenge.lat, Global.instance.challenge.lng),
-        GeoPoint(pos!.latitude, pos!.longitude),
-        Global.instance.challenge.totalDistance);
-
-    Global.instance.isChallengeStarted = true;
-    Global.instance.challenge.distance = DistCalculator.instance.getDist(
-        Location(pos!.latitude, pos!.longitude),
-        Location(Global.instance.challenge.lat, Global.instance.challenge.lng));
-    Global.instance.startTimer();
-
-    setState(() {
-      challengeMarker = Global.instance.challengeMarker;
-    });
-  }
-
-  void handleRedirection(int index) {
-    switch (index) {
-      case 0:
-        context.go('/profileview');
-        break;
-      case 1:
-        return;
-      case 2:
-        context.go('/historyviewmap');
-        break;
-      case 3:
-        context.go('/historyviewphotos');
-        break;
-    }
-  }
+  Future<void> abandonChallenge() async {}
 
   @override
   void initState() {
@@ -84,8 +52,12 @@ class _HomePageState extends State<HomePage> {
 
     challengeStateStream =
         Global.instance.challengeStateStream.listen((event) async {
-      if (event == 1) {
+      if (event == ChallengeState.completed) {
         context.go("/photopage");
+      } else if (event == ChallengeState.started) {
+        setState(() {
+          challengeMarker = Global.instance.challengeMarker;
+        });
       }
     });
 
@@ -103,150 +75,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: Global.instance.streak == -1
-              ? FutureBuilder(
-                  future: Global.instance.fetchStreak(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState != ConnectionState.done) {
-                      return Container();
-                    } else {
-                      return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            GestureDetector(
-                              onTap: () => showDialog(
-                                  context: context,
-                                  builder: (context) => const AlertDialog(
-                                        title: Text("Streak"),
-                                        content: Text(
-                                            "This is your streak.\n\nA streak is a continuous series of challenges completed on consecutive days.\n\nBy completing challenges day after day, you can increase your streak."),
-                                      )),
-                              child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const EmojiText(text: '🔥'),
-                                    Text(" ${Global.instance.streak}", style: const TextStyle(fontSize: 14),),
-                                  ]),
-                            ),
-                            const Text(' '),
-                            GestureDetector(
-                                onTap: () => showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                          title: const Text("Radius"),
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Text(
-                                            "This is the radius the challenge goal can be generated in."), const SizedBox(height: 20,), Image.asset("assets/img/radius.png", alignment: Alignment.center), const SizedBox(height: 20,), const Text("The first value is the minimum distance between you and the challenge goal and the last value is the maximum distance between you and the challenge goal.")
-                                            //"),
-                                ]))),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.blur_circular),
-                                    Text(
-                                      Global.instance.radiusText,
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                  ],
-                                ))
-                          ]);
-                    }
-                  },
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                      GestureDetector(
-                        onTap: () => showDialog(
-                            context: context,
-                            builder: (context) => const AlertDialog(
-                                  title: Text("Streak"),
-                                  content: Text(
-                                      "This is your streak.\n\nA streak is a continuous series of challenges completed on consecutive days.\n\nBy completing challenges day after day, you can increase your streak."),
-                                )),
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const EmojiText(text: '🔥'),
-                              Text(
-                                " ${Global.instance.streak}",
-                                style: const TextStyle(fontSize: 14),
-                              )
-                            ]),
-                      ),
-                      const Text(' '),
-                      GestureDetector(
-                          onTap: () => showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                          title: const Text("Radius"),
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Text(
-                                            "This is the radius the challenge goal can be generated in."), const SizedBox(height: 20,), Image.asset("assets/img/radius.png", alignment: Alignment.center,), const SizedBox(height: 20,), const Text("The first value is the minimum distance between you and the challenge goal and the last value is the maximum distance between you and the challenge goal.")
-                                            //"),
-                                ]))),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.blur_circular),
-                              Text(
-                                Global.instance.radiusText,
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ))
-                    ])),
-      bottomNavigationBar: BottomAppBar(
-          child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-            Tooltip(
-              message: "Profile",
-              child: IconButton(
-                icon: const Icon(
-                  Icons.person,
-                  color: Colors.black,
-                ),
-                color: Colors.white,
-                onPressed: () => handleRedirection(0),
-              ),
-            ),
-            Tooltip(
-              message: "Home",
-              child: IconButton(
-                icon: const Icon(
-                  Icons.home,
-                  color: Color(0xff725ac1),
-                ),
-                color: Colors.white,
-                onPressed: () => handleRedirection(1),
-              ),
-            ),
-            Tooltip(
-              message: "History",
-              child: IconButton(
-                  icon: const Icon(
-                    Icons.timeline,
-                    color: Colors.black,
-                  ),
-                  color: Colors.white,
-                  onPressed: () => handleRedirection(2)),
-            ),
-            Tooltip(
-              message: "Photos",
-              child: IconButton(
-                  icon: const Icon(
-                    Icons.photo,
-                    color: Colors.black,
-                  ),
-                  color: Colors.white,
-                  onPressed: () => handleRedirection(3)),
-            )
-          ])),
+      appBar: const MyAppBar(),
+      bottomNavigationBar: const MyBottomAppBar(currentPage: 1),
       body: FutureBuilder(
           future: getPosition(),
           builder: (context, snapshot) {
@@ -279,21 +109,28 @@ class _HomePageState extends State<HomePage> {
                   CurrentLocationLayer(),
                   MarkerLayer(
                     markers: [challengeMarker],
+                  ),
+                  if(Global.instance.isChallengeStarted)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: FloatingActionButton(onPressed: () => refreshChallenge(), mini: true, child: const Icon(Icons.refresh),),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: FloatingActionButton(onPressed: () => abandonChallenge(), backgroundColor: Colors.red, mini: true, child: const Icon(Icons.close),),
+                      ),
+                    ],
                   )
                 ],
               );
             }
           }),
-      floatingActionButton: FloatingActionButton(
-          tooltip: Global.instance.isChallengeStarted
-              ? "Remaining distance"
-              : "Initiate challenge",
-          onPressed:
-              Global.instance.isChallengeStarted ? null : initiateChallenge,
-          child: Global.instance.isChallengeStarted
-              ? Text(Global.instance.displayDistance)
-              : const Icon(Icons.bolt)),
+      floatingActionButton: const BottomAppbarFloatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
+

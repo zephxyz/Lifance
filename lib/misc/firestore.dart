@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:tg_proj/misc/photo_info.dart';
+import 'package:tg_proj/misc/user_info.dart';
 
 class Firestore {
   static final Firestore instance = Firestore._();
@@ -38,18 +39,7 @@ class Firestore {
     }
   }
 
-  Future<String?> getUserEmail() async {
-    if (user == null) {
-      return null;
-    }
-
-    final docSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user?.uid)
-        .get();
-
-    return docSnapshot.data()?['email'];
-  }
+  
 
   Future<void> checkStreak() async {
     if (user == null) {
@@ -205,30 +195,6 @@ class Firestore {
     await Global.instance.fetchStreak();
   }
 
-  Future<Timestamp?> getUserRegisteredOn() async {
-    if (user == null) {
-      return null;
-    }
-
-    return await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user?.uid)
-        .get()
-        .then((value) => value.data()?['registered_on'] ?? Timestamp.now());
-  }
-
-  Future<int?> getTotalDistance() async {
-    user?.reload();
-    if (user == null) {
-      return null;
-    }
-    return await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user?.uid)
-        .get()
-        .then((value) => value.data()?['total_distance'] ?? 0);
-  }
-
   Future<int?> getChallengesCompleted() async {
     if (user == null) {
       return null;
@@ -240,7 +206,8 @@ class Firestore {
         .then((value) => value.data()?['challenges_completed'] ?? 0);
   }
 
-  Future<int?> getLongestStreak() async {
+
+  Future<UserInfo?> getUserInfo() async {
     if (user == null) {
       return null;
     }
@@ -248,7 +215,7 @@ class Firestore {
         .collection('users')
         .doc(user?.uid)
         .get()
-        .then((value) => value.data()?['longest_streak'] ?? 0);
+        .then((value) => UserInfo(user?.email, value.data()?['registered_on'], TotalDistance(value.data()?['total_distance']), value.data()?['longest_streak'], value.data()?['challenges_completed']));
   }
 
   Future<List<PhotoInfo>> getHistoryPhotos() async {
@@ -277,5 +244,16 @@ class Firestore {
     }
 
     return photos;
+  }
+
+  Future<void> deleteAccountData() async {
+    if (user == null) {
+      return;
+    }
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user?.uid)
+        .delete();
+    
   }
 }

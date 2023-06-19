@@ -1,8 +1,5 @@
-
 import 'dart:math';
 import 'package:latlong2/latlong.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter/material.dart';
 import 'package:haversine_distance/haversine_distance.dart';
 import 'package:tg_proj/misc/challenge.dart';
 
@@ -24,10 +21,7 @@ class DistCalculator {
   int getDist(Location start, Location end) =>
       HaversineDistance().haversine(start, end, Unit.METER).floor();
 
-
   Challenge _calculate(int minDist, int maxDist, LatLng usr) {
-
-    
     final double latPortion = rng.nextDouble();
     final double lngPortion = 1 - latPortion;
 
@@ -51,6 +45,11 @@ class DistCalculator {
       chal.longitude -= lng;
     }
 
-    return Challenge(chal.latitude, chal.longitude, distance.floor(), distance.floor());
+    return Challenge(
+        chal.latitude,
+        chal.longitude,
+        getDist(Location(usr.latitude, usr.longitude),
+            Location(chal.latitude, chal.longitude)),
+        distance.floor());
   }
 }

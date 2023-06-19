@@ -1,3 +1,4 @@
+
 import 'package:haversine_distance/haversine_distance.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:tg_proj/misc/firestore.dart';
@@ -6,6 +7,7 @@ import 'package:tg_proj/misc/challenge.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:tg_proj/misc/geolocation.dart';
+import 'package:tg_proj/misc/challenge_state.dart';
 
 import 'dist_calc.dart';
 
@@ -24,20 +26,20 @@ class Global {
   Challenge challenge = Challenge(0, 0, 0, 0);
   bool isChallengeStarted = false;
 
-  final StreamController<int> _challengeStateController =
-      StreamController<int>.broadcast();
+  final StreamController<ChallengeState> _challengeStateController =
+      StreamController<ChallengeState>.broadcast();
 
-  Stream<int> get challengeStateStream => _challengeStateController.stream;
+  Stream<ChallengeState> get challengeStateStream => _challengeStateController.stream;
 
   Timer? _timer;
 
   void finishChallenge() {
     _timer?.cancel();
     isChallengeStarted = false;
-    _challengeStateController.add(1);
+    _challengeStateController.add(ChallengeState.completed);
   }
 
-  /// Starts the timer that updates the challenge every second
+  /// Starts the timer that updates the challenge
   void startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
       await Geolocation.instance.position.then((pos) async {
@@ -47,6 +49,9 @@ class Global {
         if (challenge.distance <= 50) {
           finishChallenge();
         }
+
+        //_challengeStateController.add(ChallengeState.started);
+        _challengeStateController.add(ChallengeState.distanceUpdated);
       });
     });
   }
@@ -84,6 +89,8 @@ class Global {
       challenge.totalDistance = challengeInfo['total_distance'];
       isChallengeStarted = true;
       startTimer();
+      _challengeStateController.add(ChallengeState.started);
+      _challengeStateController.add(ChallengeState.distanceUpdated);
     }
   }
 
@@ -110,4 +117,8 @@ class Global {
   }
 
   String get displayDistance => "${challenge.distance.toString()}m";
+
+  void broadcastStart() {
+    _challengeStateController.add(ChallengeState.started);
+  }
 }

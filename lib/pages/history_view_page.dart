@@ -10,8 +10,11 @@ import 'package:tg_proj/misc/firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:tg_proj/widgets/bottom_appbar_fab.dart';
+import 'package:tg_proj/misc/challenge_state.dart';
 
-import '../misc/emoji_text.dart';
+import '../widgets/appbar.dart';
+import '../widgets/bottom_appbar.dart';
 import '../misc/photo_info.dart';
 
 class HistoryViewPageMap extends StatefulWidget {
@@ -24,25 +27,16 @@ class HistoryViewPageMap extends StatefulWidget {
 class _HistoryViewPageMapState extends State<HistoryViewPageMap> {
   List<Marker> markers = [];
   Position? pos;
-  StreamSubscription<int>? challengeStateStream;
-  
+  StreamSubscription<ChallengeState>? challengeStateStream;
+
   @override
   void initState() {
     super.initState();
     challengeStateStream = Global.instance.challengeStateStream.listen((event) {
-      if(event == 1) {
+      if (event == ChallengeState.completed) {
         context.go('/photopage');
       }
     });
-  }
-
-  void handleRedirection(int index) {
-    if (index == 2) return;
-    if (index == 0) {
-      context.go('/profileview');
-    } else {
-      context.go('/');
-    }
   }
 
   Future<void> getHistoryMarkers() async {
@@ -57,63 +51,9 @@ class _HistoryViewPageMapState extends State<HistoryViewPageMap> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: Global.instance.streak == -1
-              ? FutureBuilder(
-                  future: Global.instance.fetchStreak(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState != ConnectionState.done) {
-                      return Container();
-                    } else {
-                      return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text("${Global.instance.streak}"),
-                                  const EmojiText(text: '🔥')
-                                ]),
-                            const Text(' '),
-                            Text(
-                                "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m")
-                          ]);
-                    }
-                  },
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text("${Global.instance.streak}"),
-                            const EmojiText(text: '🔥')
-                          ]),
-                      const Text(' '),
-                      Text(
-                          "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m")
-                    ])),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.location_pin),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.timeline),
-            label: 'History',
-          ),
-        ],
-        currentIndex: 2,
-        unselectedItemColor: Colors.black,
-        selectedItemColor: const Color(0xff725ac1), //,const Color(0xff8D86C9),
-        onTap: handleRedirection,
-        backgroundColor: Colors.white,
+      appBar: const MyAppBar(),
+      bottomNavigationBar: const MyBottomAppBar(
+        currentPage: 2,
       ),
       body: Stack(children: [
         FutureBuilder(
@@ -148,7 +88,8 @@ class _HistoryViewPageMapState extends State<HistoryViewPageMap> {
               }
             }),
       ]),
-      
+      floatingActionButton: const BottomAppbarFloatingActionButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
@@ -163,16 +104,7 @@ class HistoryViewPagePhotos extends StatefulWidget {
 class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
   List<PhotoInfo> photos = [];
 
-  StreamSubscription<int>? challengeStateStream;
-
-  void handleRedirection(int index) {
-    if (index == 2) return;
-    if (index == 0) {
-      context.go('/profileview');
-    } else {
-      context.go('/');
-    }
-  }
+  StreamSubscription<ChallengeState>? challengeStateStream;
 
   Future<void> getPhotos() async {
     photos = await Firestore.instance.getHistoryPhotos();
@@ -185,15 +117,18 @@ class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
     for (int i = 0; i < photos.length; i++) {
       final photo = photos[i];
 
-     children.add(
+      children.add(
         GestureDetector(
             onTap: () => print("success$i"),
-            child: Image.file(File(photo.getPath), height: 100, width: 100, fit: BoxFit.cover,)),
+            child: Image.file(
+              File(photo.getPath),
+              height: 100,
+              width: 100,
+              fit: BoxFit.cover,
+            )),
         //Text(DateFormat('yyyy-MM-dd').format(photo.getDate.toDate())),
       );
-
-      
-      }
+    }
 
     return children;
   }
@@ -203,7 +138,7 @@ class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
     super.initState();
     getPhotos();
     challengeStateStream = Global.instance.challengeStateStream.listen((event) {
-      if(event == 1) {
+      if (event == ChallengeState.completed) {
         context.go('/photopage');
       }
     });
@@ -212,63 +147,9 @@ class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: Global.instance.streak == -1
-              ? FutureBuilder(
-                  future: Global.instance.fetchStreak(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState != ConnectionState.done) {
-                      return Container();
-                    } else {
-                      return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text("${Global.instance.streak}"),
-                                  const EmojiText(text: '🔥')
-                                ]),
-                            const Text(' '),
-                            Text(
-                                "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m")
-                          ]);
-                    }
-                  },
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text("${Global.instance.streak}"),
-                            const EmojiText(text: '🔥')
-                          ]),
-                      const Text(' '),
-                      Text(
-                          "${300 + Global.instance.streak}m | ${700 + Global.instance.streak}m")
-                    ])),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.location_pin),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.timeline),
-            label: 'History',
-          ),
-        ],
-        currentIndex: 2,
-        unselectedItemColor: Colors.black,
-        selectedItemColor: const Color(0xff725ac1), //,const Color(0xff8D86C9),
-        onTap: handleRedirection,
-        backgroundColor: Colors.white,
+      appBar: const MyAppBar(),
+      bottomNavigationBar: const MyBottomAppBar(
+        currentPage: 3,
       ),
       body: GridView(
         padding: const EdgeInsets.all(16),
@@ -277,10 +158,10 @@ class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
           mainAxisSpacing: 10,
           crossAxisSpacing: 10,
         ),
-        children: [
-          for (var widget in getChildren()) widget
-        ],
+        children: [for (var widget in getChildren()) widget],
       ),
+      floatingActionButton: const BottomAppbarFloatingActionButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
