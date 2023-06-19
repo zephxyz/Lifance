@@ -1,4 +1,3 @@
-
 import 'package:haversine_distance/haversine_distance.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:tg_proj/misc/firestore.dart';
@@ -29,9 +28,18 @@ class Global {
   final StreamController<ChallengeState> _challengeStateController =
       StreamController<ChallengeState>.broadcast();
 
-  Stream<ChallengeState> get challengeStateStream => _challengeStateController.stream;
+  Stream<ChallengeState> get challengeStateStream =>
+      _challengeStateController.stream;
 
   Timer? _timer;
+
+  void resetAll() {
+    firstLaunch = true;
+    streak = -1;
+    challenge = Challenge(0, 0, 0, 0);
+    isChallengeStarted = false;
+    _timer?.cancel();
+  }
 
   void finishChallenge() {
     _timer?.cancel();
@@ -67,10 +75,12 @@ class Global {
 
   Future<void> onStart() async {
     if (firstLaunch) {
+      Firestore.instance.refreshUser();
       await Firestore.instance.onFirstLogin();
       await Firestore.instance.checkStreak();
       await fetchStreak();
       await getChallengeIfAlreadyStarted();
+
       firstLaunch = false;
     }
   }

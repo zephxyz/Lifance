@@ -38,6 +38,11 @@ class _HistoryViewPageMapState extends State<HistoryViewPageMap> {
       }
     });
   }
+  @override
+  void dispose() {
+    challengeStateStream?.cancel();
+    super.dispose();
+  }
 
   Future<void> getHistoryMarkers() async {
     markers = await Firestore.instance.getHistoryMarkers();
@@ -142,6 +147,12 @@ class _HistoryViewPagePhotosState extends State<HistoryViewPagePhotos> {
         context.go('/photopage');
       }
     });
+  }
+
+  @override
+  void dispose() {
+    challengeStateStream?.cancel();
+    super.dispose();
   }
 
   @override

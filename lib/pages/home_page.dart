@@ -41,7 +41,9 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> refreshChallenge() async {}
+  Future<void> refreshChallenge() async {
+    await DistCalculator.instance.refreshChallenge();
+  }
 
   Future<void> abandonChallenge() async {}
 
@@ -110,20 +112,51 @@ class _HomePageState extends State<HomePage> {
                   MarkerLayer(
                     markers: [challengeMarker],
                   ),
-                  if(Global.instance.isChallengeStarted)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: FloatingActionButton(onPressed: () => refreshChallenge(), mini: true, child: const Icon(Icons.refresh),),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: FloatingActionButton(onPressed: () => abandonChallenge(), backgroundColor: Colors.red, mini: true, child: const Icon(Icons.close),),
-                      ),
-                    ],
-                  )
+                  if (Global.instance.isChallengeStarted)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: FloatingActionButton(
+                            onPressed: () => showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text("Refresh challenge"),
+                                  content: const Text(
+                                      "This allows you to refresh the location goal of the challenge.\n\nShould be used only if the location is unreachable."),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text("Cancel")),
+                                    TextButton(
+                                        onPressed: () {
+                                          refreshChallenge();
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text("Refresh")),
+                                  ],
+                                );
+                              },
+                            ),
+                            mini: true,
+                            child: const Icon(Icons.refresh),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: FloatingActionButton(
+                            onPressed: () => abandonChallenge(),
+                            backgroundColor: Colors.red,
+                            mini: true,
+                            child: const Icon(Icons.close),
+                          ),
+                        ),
+                      ],
+                    )
                 ],
               );
             }
@@ -133,4 +166,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-

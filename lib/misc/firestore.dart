@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:tg_proj/misc/auth.dart';
 import 'package:tg_proj/misc/global.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -13,7 +13,11 @@ class Firestore {
 
   Firestore._();
 
-  final user = Auth.instance.currentUser;
+  auth.User? user = Auth.instance.currentUser;
+
+  void refreshUser() {
+    user = Auth.instance.currentUser;
+  }
 
   Future<int> getStreak() async {
     if (user == null) {
@@ -24,6 +28,18 @@ class Firestore {
         .doc(user?.uid)
         .get();
     return docSnapshot.data()?['streak'];
+  }
+
+  Future<void> updateChallenge() async {
+    if (user == null) {
+      return;
+    }
+     await FirebaseFirestore.instance.collection('users').doc(user?.uid).update({
+      'challenge_pending': {
+        'lat': Global.instance.challenge.lat,
+        'lng': Global.instance.challenge.lng,
+      }
+    });
   }
 
   Future<void> onFirstLogin() async {
@@ -38,8 +54,6 @@ class Firestore {
       await createDocOnRegister();
     }
   }
-
-  
 
   Future<void> checkStreak() async {
     if (user == null) {
@@ -93,7 +107,8 @@ class Firestore {
     return challengePending != null;
   }
 
-  Future<void> onChallengeStart(GeoPoint point, GeoPoint startPos, int totalDistance) async {
+  Future<void> onChallengeStart(
+      GeoPoint point, GeoPoint startPos, int totalDistance) async {
     if (user == null) {
       return;
     }
@@ -206,7 +221,6 @@ class Firestore {
         .then((value) => value.data()?['challenges_completed'] ?? 0);
   }
 
-
   Future<UserInfo?> getUserInfo() async {
     if (user == null) {
       return null;
@@ -215,7 +229,12 @@ class Firestore {
         .collection('users')
         .doc(user?.uid)
         .get()
-        .then((value) => UserInfo(user?.email, value.data()?['registered_on'], TotalDistance(value.data()?['total_distance']), value.data()?['longest_streak'], value.data()?['challenges_completed']));
+        .then((value) => UserInfo(
+            user?.email,
+            value.data()?['registered_on'],
+            TotalDistance(value.data()?['total_distance']),
+            value.data()?['longest_streak'],
+            value.data()?['challenges_completed']));
   }
 
   Future<List<PhotoInfo>> getHistoryPhotos() async {
@@ -254,6 +273,5 @@ class Firestore {
         .collection('users')
         .doc(user?.uid)
         .delete();
-    
   }
 }

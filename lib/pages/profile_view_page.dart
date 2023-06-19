@@ -30,8 +30,9 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   Future<void> signOut() async {
     await Auth.instance.signOut().then((_) {
       Navigator.of(context).pop();
+      Global.instance.resetAll();
       goToLoginPage();
-     });
+    });
     goToLoginPage();
   }
 
@@ -69,6 +70,12 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
   }
 
   @override
+  void dispose() {
+    challengeStateStream?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     var deleteController = TextEditingController();
     String deleteText = "";
@@ -86,16 +93,15 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
           GestureDetector(
             onTap: () => showDialog(
               context: context,
-              builder: (context) =>  AlertDialog(
+              builder: (context) => AlertDialog(
                 title: const Text("Email"),
-                content:
-                    const Text("This is the email adress you have registered under."),
-                    actions: [
-                                  TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                      child: const Text("Got it")),
-                                ],
+                content: const Text(
+                    "This is the email adress you have registered under."),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text("Got it")),
+                ],
               ),
             ),
             child: Padding(
@@ -107,15 +113,17 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                   child: user?.getEmail == null && !loaded
                       ? const CircularProgressIndicator()
                       : FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                            user?.getEmail ??
-                               (loaded ? "Something went wrong..." : "loading..."),
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                            )),
-                      ),
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                              user?.getEmail ??
+                                  (loaded
+                                      ? "Something went wrong..."
+                                      : "loading..."),
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                              )),
+                        ),
                 ),
               ),
             ),
@@ -254,10 +262,8 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                       const SizedBox(
                                         width: 8,
                                       ),
-                                      const Icon(
-                                        Icons.blur_circular,
-                                        color: Colors.deepOrangeAccent
-                                      ),
+                                      const Icon(Icons.blur_circular,
+                                          color: Colors.deepOrangeAccent),
                                       Text(
                                         Global.instance.radiusText,
                                         style: const TextStyle(fontSize: 18),
@@ -649,6 +655,7 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                   });
                                 },
                               ),
+                              const SizedBox(height: 8,),
                               Text(_deleteErrMsg,
                                   style: const TextStyle(color: Colors.red)),
                             ],
@@ -660,16 +667,18 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                             TextButton(
                                 onPressed: () async {
                                   if (deleteText == "delete") {
-                                    await Firestore.instance.deleteAccountData();
+                                    await Firestore.instance
+                                        .deleteAccountData();
                                     await Auth.instance.deleteUser().then((_) {
-                                      goToLoginPage();
                                       Navigator.of(context).pop();
+                                      Global.instance.resetAll();
+                                      goToLoginPage();
                                     });
-            
-                                    goToLoginPage();
+
+                                    
                                   } else {
                                     setState(() {
-                                      _deleteErrMsg = "Please type 'delete'";
+                                      _deleteErrMsg = "Type 'delete' to confirm";
                                     });
                                   }
                                 },
