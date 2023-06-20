@@ -30,8 +30,8 @@ class _MyAppBarState extends State<MyAppBar> {
                             onTap: () => showDialog(
                                 context: context,
                                 builder: (context) => AlertDialog(
-                                      title: Text("Streak"),
-                                      content: Text(
+                                      title: const Text("Streak"),
+                                      content: const Text(
                                           "This is your streak.\n\nA streak is a continuous series of challenges completed on consecutive days.\n\nBy completing challenges day after day, you can increase your streak."),
                                       actions: [
                                         TextButton(
@@ -109,8 +109,8 @@ class _MyAppBarState extends State<MyAppBar> {
                   onTap: () => showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
-                            title: Text("Streak"),
-                            content: Text(
+                            title: const Text("Streak"),
+                            content: const Text(
                                 "This is your streak.\n\nA streak is a continuous series of challenges completed on consecutive days.\n\nBy completing challenges day after day, you can increase your streak."),
                             actions: [
                               TextButton(

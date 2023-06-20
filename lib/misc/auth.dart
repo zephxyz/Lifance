@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lifance/misc/global.dart';
 
 class Auth {
   static final Auth instance = Auth._();
@@ -11,7 +12,6 @@ class Auth {
 
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
-  
   Future<void> signInWithEmailAndPassword({
     required String email,
     required String password,
@@ -67,9 +67,15 @@ class Auth {
   }
 
   Future<void> deleteUser() async {
+    Global.instance.resetAll();
     User? user = _firebaseAuth.currentUser;
     if (user != null) {
+      try{
       await user.delete();
+      } catch (e) {
+        print(e);
+      }
+      
     }
   }
 }

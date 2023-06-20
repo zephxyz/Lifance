@@ -28,7 +28,7 @@ class Firestore {
         .doc(user?.uid)
         .update({'challenge_pending': null});
   }
-  
+
   Future<int> getStreak() async {
     if (user == null) {
       return 0;
@@ -37,7 +37,7 @@ class Firestore {
         .collection('users')
         .doc(user?.uid)
         .get();
-    return docSnapshot.data()?['streak'];
+    return docSnapshot.data()?['streak'] ?? 0;
   }
 
   Future<void> updateChallenge() async {
@@ -74,7 +74,7 @@ class Firestore {
         .doc(user?.uid)
         .get();
     final temp = docSnapshot.data()?['last_challenge_completed'];
-
+    if (temp == null) return;
     final DateTime lastChallengeCompleted = temp.toDate();
     final usrData =
         FirebaseFirestore.instance.collection('users').doc(user?.uid);

@@ -77,7 +77,7 @@ class DistCalculator {
     return Challenge(
         chal.latitude,
         chal.longitude,
-        getDist(Location(usr.latitude, usr.longitude),
+        desiredDist?.floor() ?? getDist(Location(usr.latitude, usr.longitude),
             Location(chal.latitude, chal.longitude)),
         distance.floor(), Timestamp.now(), null);
   }

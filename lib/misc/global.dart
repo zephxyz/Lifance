@@ -143,5 +143,6 @@ class Global {
 
   void broadcastStart() {
     _challengeStateController.add(ChallengeState.ongoingStateChanged);
+    _challengeStateController.add(ChallengeState.distanceUpdated);
   }
 }
