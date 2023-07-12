@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../misc/auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -67,7 +66,10 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Sign in'),
+          title: IconButton(
+            onPressed: () => context.go('/auth'),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+          ),
         ),
         body: Form(
             child: SingleChildScrollView(
@@ -85,6 +87,11 @@ class _LoginPageState extends State<LoginPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                const Text(
+                  "Sign in with email",
+                  style: TextStyle(fontSize: 24),
+                ),
+                const SizedBox(height: 8,),
                 TextFormField(
                   controller: _controllerEmail,
                   decoration: const InputDecoration(
@@ -126,18 +133,6 @@ class _LoginPageState extends State<LoginPage> {
                   },
                   child: Text(isLogin ? 'Sign Up instead' : 'Sign In instead'),
                 ),
-                SignInButton(Buttons.Google, onPressed: () async {
-                  try{
-                    if(await Auth.instance.signInViaGoogle()){
-                      goToGetPermPage();
-                    }
-                  } on FirebaseAuthException catch (e) {
-                    setState(() {
-                      errorMessage = e.message;
-                    });
-                  }
-                 
-                })
               ],
             )
           ]),
