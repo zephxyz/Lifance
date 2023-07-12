@@ -70,12 +70,18 @@ class Auth {
     Global.instance.resetAll();
     User? user = _firebaseAuth.currentUser;
     if (user != null) {
-      try{
-      await user.delete();
-      } catch (e) {
-        print(e);
-      }
-      
+      try {
+        await user.delete();
+      } finally {}
     }
+  }
+
+  Future<bool> signInViaGoogle() async {
+    try {
+      await _firebaseAuth.signInWithProvider(GoogleAuthProvider());
+    } catch (e) {
+      rethrow;
+    }
+    return true;
   }
 }

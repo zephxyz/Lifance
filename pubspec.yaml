@@ -52,6 +52,7 @@ dependencies:
   flutter_svg: ^2.0.5
   path_provider: ^2.0.14
   intl: any
+  flutter_signin_button: ^2.0.0
 
 dev_dependencies:
   flutter_test:

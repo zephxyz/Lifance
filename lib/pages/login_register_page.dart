@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../misc/auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -125,6 +126,18 @@ class _LoginPageState extends State<LoginPage> {
                   },
                   child: Text(isLogin ? 'Sign Up instead' : 'Sign In instead'),
                 ),
+                SignInButton(Buttons.Google, onPressed: () async {
+                  try{
+                    if(await Auth.instance.signInViaGoogle()){
+                      goToGetPermPage();
+                    }
+                  } on FirebaseAuthException catch (e) {
+                    setState(() {
+                      errorMessage = e.message;
+                    });
+                  }
+                 
+                })
               ],
             )
           ]),
