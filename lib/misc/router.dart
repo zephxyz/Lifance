@@ -9,6 +9,7 @@ import 'package:lifance/pages/login_register_page.dart';
 import 'package:lifance/misc/auth.dart';
 import 'package:lifance/misc/geolocation.dart';
 import 'package:lifance/pages/photo_page.dart';
+import 'package:lifance/pages/select_signin_option_page.dart';
 
 final router = GoRouter(
   initialLocation: '/auth',
@@ -21,7 +22,7 @@ final router = GoRouter(
     GoRoute(
       path: '/auth',
       pageBuilder: (context, state) =>
-          const NoTransitionPage(child: LoginPage()),
+          const NoTransitionPage(child: SelectSignInOptionPage()),
       redirect: (context, state) {
         if (Auth.instance.currentUser != null &&
             Auth.instance.isEmailVerified()) {
@@ -30,6 +31,11 @@ final router = GoRouter(
           return null;
         }
       },
+    ),
+    GoRoute(
+      path: '/auth/email',
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: LoginPage()),
     ),
     GoRoute(
       path: '/getperm',

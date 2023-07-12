@@ -66,7 +66,10 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Sign in'),
+          title: IconButton(
+            onPressed: () => context.go('/auth'),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+          ),
         ),
         body: Form(
             child: SingleChildScrollView(
@@ -84,6 +87,11 @@ class _LoginPageState extends State<LoginPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                const Text(
+                  "Sign in with email",
+                  style: TextStyle(fontSize: 24),
+                ),
+                const SizedBox(height: 8,),
                 TextFormField(
                   controller: _controllerEmail,
                   decoration: const InputDecoration(

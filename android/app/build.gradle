@@ -23,6 +23,7 @@ if (flutterVersionName == null) {
 
 apply plugin: 'com.android.application'
 // START: FlutterFire Configuration
+
 apply plugin: 'com.google.gms.google-services'
 // END: FlutterFire Configuration
 apply plugin: 'kotlin-android'
@@ -63,6 +64,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
+    namespace 'com.example.tg_auth'
 }
 
 flutter {
@@ -72,3 +74,5 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22"
 }
+
+
