@@ -12,7 +12,7 @@ class ChallengeCompletedPage extends StatelessWidget {
             Global.instance.challenge.lat,
             Global.instance.challenge.lng,
             Global.instance.challenge.totalDistance,
-            null)
+            null, null)
         .then((_) {
       Global.instance.resetChallengeValues();
       context.go('/');

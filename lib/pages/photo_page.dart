@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:lifance/misc/global.dart';
 import 'package:lifance/misc/firestore.dart';
 import 'package:flutter/services.dart';
+
+import 'package:lifance/misc/firebase_storage.dart';
 
 class PhotoPage extends StatefulWidget {
   const PhotoPage({super.key});
@@ -71,16 +74,21 @@ class _PhotoPageState extends State<PhotoPage> {
     final directory = await getApplicationDocumentsDirectory();
     final savedImagePath =
         '${directory.path}/ChallengePhotos/${file.path.split('/').last}';
+    
+
+
 
     File newFile = File(savedImagePath);
-    newFile.create(recursive: true);
+    newFile.createSync(recursive: true);
     newFile.writeAsBytesSync(file.readAsBytesSync());
     file.deleteSync(recursive: true);
+    final backupUrl = await FbStorage.instance.upload(newFile.path);
     await Firestore.instance.addChallengeToHistory(
         Global.instance.challenge.lat,
         Global.instance.challenge.lng,
         Global.instance.challenge.totalDistance,
-        savedImagePath);
+        savedImagePath,
+        backupUrl);
 
     Global.instance.resetChallengeValues();
 
@@ -89,7 +97,7 @@ class _PhotoPageState extends State<PhotoPage> {
 
   Future<void> skipTakingPhoto() async {
     await Firestore.instance.addChallengeToHistory(Global.instance.challenge.lat,
-        Global.instance.challenge.lng, Global.instance.challenge.totalDistance, null);
+        Global.instance.challenge.lng, Global.instance.challenge.totalDistance, null, null);
 
     goToHome();
   }

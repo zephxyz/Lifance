@@ -54,6 +54,9 @@ dependencies:
   intl: any
   flutter_signin_button: ^2.0.0
   games_services: ^3.0.1
+  app_tutorial: ^0.3.2
+  geofence_service: ^4.0.0
+  firebase_storage: ^11.2.6
 
 dev_dependencies:
   flutter_test:

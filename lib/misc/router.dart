@@ -2,7 +2,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lifance/pages/challenge_completed_page.dart';
 import 'package:lifance/pages/get_permission_page.dart';
-import 'package:lifance/pages/history_view_page.dart';
+import 'package:lifance/pages/history_view_page_map.dart';
 import 'package:lifance/pages/profile_view_page.dart';
 import 'package:lifance/pages/home_page.dart';
 import 'package:lifance/pages/login_register_page.dart';
@@ -10,6 +10,7 @@ import 'package:lifance/misc/auth.dart';
 import 'package:lifance/misc/geolocation.dart';
 import 'package:lifance/pages/photo_page.dart';
 import 'package:lifance/pages/select_signin_option_page.dart';
+import 'package:lifance/pages/history_view_page_photos.dart';
 
 final router = GoRouter(
   initialLocation: '/auth',

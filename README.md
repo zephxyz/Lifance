@@ -1,7 +1,7 @@
 
 # Lifance
 
-# Releasing 1/8/2023 on Play Store
+# Release delayed, release date TBA
 
 Cílem projektu je vyvinout mobilní aplikaci, která bude sloužit jako nástroj pro podporu rovnováhy mezi prací a odpočinkem. Aplikace bude umožňovat přihlašování, registraci, odhlašování a odstraňování profilů uživatelů. Bude zahrnovat mapu, na které uživatelé budou moci zjišťovat cíle vybrané aplikací. Každý den bude k dispozici nová "výzva", která přidá na mapu náhodný bod v určité vzdálenosti od uživatele. Uživatel může zahájit "výzvu" stisknutím tlačítka a zvolit, zda chce ujít více než minimální vzdálenost. Minimální vzdálenost se bude dynamicky zvyšovat s počtem úspěšně dokončených "výzev". Uživatel může "výzvu" splnit, pokud se dostane do radiusu 50 metrů od cíle "výzvy". Po splnění "výzvy" bude uživatel vyzván k pořízení fotografie místa, kde se nachází, a obdrží odměnu ve formě symbolů "🔥", které představují počet úspěšně dokončených "výzev" v řadě. Aplikace bude také obsahovat možnost zahájit další výzvu po dokončení předchozí. Pro uživatele bude k dispozici nápověda a návod, jak aplikaci používat. Bude také možné nastavit upozornění, která budou uživatele vybízet k tomu, aby se připravili na další "výzvu" nebo aby se rozhodli pro odpočinek. Celkově tedy cílem projektu je vyvinout aplikaci, která pomůže uživatelům udržovat rovnováhu mezi prací a odpočinkem prostřednictvím aktivit navržených v aplikaci.
 

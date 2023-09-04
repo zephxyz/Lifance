@@ -5,15 +5,18 @@ import 'package:lifance/misc/firestore.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:lifance/misc/challenge.dart';
 import 'package:flutter/material.dart';
+import 'package:lifance/misc/geofence.dart';
 import 'dart:async';
 import 'package:lifance/misc/geolocation.dart';
 import 'package:lifance/misc/challenge_state.dart';
 import 'package:lifance/misc/dist_calc.dart';
 
+
 class Global {
   static final Global instance = Global._();
 
   Global._();
+
 
   bool firstLaunch = true;
 
@@ -88,7 +91,7 @@ class Global {
       await Firestore.instance.checkStreak();
       await fetchStreak();
       await getChallengeIfAlreadyStarted();
-
+      
       firstLaunch = false;
     }
   }

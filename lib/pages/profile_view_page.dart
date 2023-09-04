@@ -212,10 +212,10 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                 ),
                               ),
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: Row(
+                              child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.min,
-                                children: const [
+                                children: [
                                   Text(
                                     "streak",
                                     style: TextStyle(
@@ -302,9 +302,9 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                 ),
                               ),
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: Row(
+                              child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Text(
                                     "radius",
                                     style: TextStyle(
@@ -380,9 +380,9 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                 ),
                               ),
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: Row(
+                              child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Text(
                                     "registered on",
                                     style: TextStyle(
@@ -456,9 +456,9 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                 ),
                               ),
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: Row(
+                              child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Text(
                                     "total distance",
                                     style: TextStyle(
@@ -533,9 +533,9 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                 ),
                               ),
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: Row(
+                              child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Text(
                                     "longest\nstreak",
                                     textAlign: TextAlign.center,
@@ -611,9 +611,9 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                 ),
                               ),
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: Row(
+                              child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Text(
                                     "challenges\ncompleted",
                                     style: TextStyle(
@@ -676,6 +676,7 @@ class _ProfileViewPageState extends State<ProfileViewPage> {
                                       _deleteErrMsg =
                                           "Type 'delete' to confirm";
                                     });
+                                
                                   }
                                 },
                                 child: const Text(

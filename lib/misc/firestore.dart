@@ -15,6 +15,7 @@ class Firestore {
 
   auth.User? user = Auth.instance.currentUser;
 
+
   void refreshUser() {
     user = Auth.instance.currentUser;
   }
@@ -194,7 +195,7 @@ class Firestore {
   }
 
   Future<void> addChallengeToHistory(
-      double lat, double lng, int distance, String? savedPath) async {
+      double lat, double lng, int distance, String? savedPath, String? backupUrl) async {
     if (user == null) {
       return;
     }
@@ -212,6 +213,7 @@ class Firestore {
       'image_path': savedPath,
       'completed_on': timeNow,
       'total_distance': distance,
+      'backup_url': backupUrl ?? '',
     });
     await usrData.update({'challenges_completed': ((index ?? 0) + 1)});
     await usrData.update({'total_distance': totalDistance + distance});
@@ -280,7 +282,7 @@ class Firestore {
         .collection('users')
         .doc(user?.uid)
         .collection('challenge_history')
-        .orderBy('completed_on', descending: true)
+        .orderBy('completed_on')
         .get();
     final List<PhotoInfo> photos = [];
 
@@ -290,14 +292,28 @@ class Firestore {
       if (photoPath == null) {
         continue;
       }
+      final String? backupUrl = data['backup_url'];
       final Timestamp? time = data['completed_on'];
       if (time == null) {
         continue;
       }
-      photos.add(PhotoInfo(photoPath, time));
+      final int index = int.parse(doc.id);
+      photos.add(PhotoInfo(photoPath, backupUrl, time, index));
     }
 
-    return photos;
+    return photos.reversed.toList();
+  }
+
+  Future<void> updatePhotoPath(String newPath, int index) async {
+    if (user == null) {
+      return;
+    }
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user?.uid)
+        .collection('challenge_history')
+        .doc('$index')
+        .update({'image_path': newPath});
   }
 
   Future<void> deleteAccountData() async {

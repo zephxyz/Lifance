@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geofence_service/models/geofence.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:lifance/misc/challenge_state.dart';
 import 'package:lifance/misc/firestore.dart';
@@ -13,8 +14,10 @@ import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'package:haversine_distance/haversine_distance.dart';
 import 'package:lifance/misc/global.dart';
+import '../misc/geofence.dart';
 import '../widgets/appbar.dart';
 import '../widgets/bottom_appbar.dart';
+import 'package:geofence_service/geofence_service.dart' as gf;
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -24,6 +27,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+ 
   Position? pos;
   Marker challengeMarker = Global.instance.challengeMarker;
   StreamSubscription<ChallengeState>? challengeStateListener;
@@ -51,6 +55,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     Global.instance.onStart();
+
+    //test
+    //Geofences.instance.start();
+    //test
 
     challengeStateListener =
         Global.instance.challengeStateStream.listen((event) async {
@@ -167,7 +175,10 @@ class _HomePageState extends State<HomePage> {
                                             abandonChallenge();
                                             Navigator.of(context).pop();
                                           },
-                                          child: const Text("Abandon", style: TextStyle(color: Colors.red),)),
+                                          child: const Text(
+                                            "Abandon",
+                                            style: TextStyle(color: Colors.red),
+                                          )),
                                     ],
                                   );
                                 }),
